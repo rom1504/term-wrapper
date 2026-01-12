@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Terminal Wrapper - Vim Demo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #1e1e1e;
+            color: #fff;
+        }
+        #container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            margin-top: 0;
+        }
+        #terminal {
+            margin-top: 20px;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .info {
+            margin: 10px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 4px;
+        }
+        input {
+            padding: 8px;
+            margin-right: 10px;
+            width: 300px;
+            border: 1px solid #555;
+            background: #2a2a2a;
+            color: #fff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Terminal Wrapper - Vim Demo</h1>
+
+        <div class="info">
+            <strong>Instructions:</strong>
+            <ol>
+                <li>Start the backend: <code>uv run python main.py</code></li>
+                <li>Click "Start vim" below</li>
+                <li>Type normally - vim works fully!</li>
+                <li>Try: <code>i</code> (insert mode), type text, <code>ESC</code>, <code>:wq</code> (save & quit)</li>
+            </ol>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="filename" placeholder="/tmp/test.txt" value="/tmp/test.txt">
+            <button id="startVim">Start vim</button>
+            <button id="startBash">Start bash</button>
+            <button id="startPython">Start python</button>
+            <button id="disconnect" disabled>Disconnect</button>
+        </div>
+
+        <div class="info" id="status">Status: Not connected</div>
+
+        <div id="terminal"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let ws = null;
+        let sessionId = null;
+        let term = null;
+        let fitAddon = null;
+
+        // Initialize terminal
+        function initTerminal() {
+            term = new Terminal({
+                cursorBlink: true,
+                fontSize: 14,
+                fontFamily: 'Menlo, Monaco, "Courier New", monospace',
+                theme: {
+                    background: '#000000',
+                    foreground: '#ffffff',
+                }
+            });
+
+            fitAddon = new FitAddon.FitAddon();
+            term.loadAddon(fitAddon);
+
+            term.open(document.getElementById('terminal'));
+            fitAddon.fit();
+
+            // Handle input from terminal
+            term.onData(data => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(new TextEncoder().encode(data));
+                }
+            });
+
+            // Resize handler
+            window.addEventListener('resize', () => {
+                fitAddon.fit();
+            });
+        }
+
+        async function createSession(command) {
+            const response = await fetch(`${API_BASE}/sessions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    command: command,
+                    rows: term.rows,
+                    cols: term.cols
+                })
+            });
+
+            const data = await response.json();
+            return data.session_id;
+        }
+
+        function connectWebSocket(sessionId) {
+            ws = new WebSocket(`ws://localhost:8000/sessions/${sessionId}/ws`);
+
+            ws.onopen = () => {
+                document.getElementById('status').textContent = `Status: Connected (Session: ${sessionId})`;
+                document.getElementById('disconnect').disabled = false;
+                term.focus();
+            };
+
+            ws.onmessage = (event) => {
+                if (event.data === '__TERMINAL_CLOSED__') {
+                    term.writeln('\r\n[Terminal closed]');
+                    disconnect();
+                } else {
+                    // Binary data from terminal
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const text = new TextDecoder().decode(reader.result);
+                        term.write(text);
+                    };
+                    reader.readAsArrayBuffer(event.data);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                document.getElementById('status').textContent = 'Status: Error';
+            };
+
+            ws.onclose = () => {
+                document.getElementById('status').textContent = 'Status: Disconnected';
+                document.getElementById('disconnect').disabled = true;
+                ws = null;
+            };
+        }
+
+        async function startVim() {
+            const filename = document.getElementById('filename').value;
+            term.clear();
+            term.writeln('Starting vim...\r\n');
+
+            sessionId = await createSession(['vim', filename]);
+            connectWebSocket(sessionId);
+        }
+
+        async function startBash() {
+            term.clear();
+            term.writeln('Starting bash...\r\n');
+
+            sessionId = await createSession(['bash']);
+            connectWebSocket(sessionId);
+        }
+
+        async function startPython() {
+            term.clear();
+            term.writeln('Starting Python...\r\n');
+
+            sessionId = await createSession(['python3']);
+            connectWebSocket(sessionId);
+        }
+
+        async function disconnect() {
+            if (ws) {
+                ws.close();
+            }
+            if (sessionId) {
+                try {
+                    await fetch(`${API_BASE}/sessions/${sessionId}`, {
+                        method: 'DELETE'
+                    });
+                } catch (e) {
+                    console.error('Error deleting session:', e);
+                }
+                sessionId = null;
+            }
+        }
+
+        // Event listeners
+        document.getElementById('startVim').addEventListener('click', startVim);
+        document.getElementById('startBash').addEventListener('click', startBash);
+        document.getElementById('startPython').addEventListener('click', startPython);
+        document.getElementById('disconnect').addEventListener('click', disconnect);
+
+        // Initialize on load
+        initTerminal();
+    </script>
+</body>
+</html>

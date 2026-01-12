@@ -2,6 +2,7 @@
 
 import asyncio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional
@@ -9,6 +10,16 @@ from .session_manager import SessionManager
 
 
 app = FastAPI(title="Terminal Wrapper API")
+
+# Add CORS middleware for browser access
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify exact origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 session_manager = SessionManager()
 
 
