@@ -134,7 +134,27 @@ uv run pytest tests/test_e2e.py -v
 
 # Integration tests with TUI apps
 uv run pytest tests/test_ink_integration.py -v
+
+# Vim tests
+uv run pytest tests/test_vim.py -v
 ```
+
+## Application Reports
+
+We've tested various TUI applications with detailed reports:
+
+| Application | Status | Report | Tests |
+|-------------|--------|--------|-------|
+| vim | ✅ Fully Functional | [reports/vim_report.md](reports/vim_report.md) | [tests/test_vim.py](tests/test_vim.py) |
+
+Each report includes:
+- Test methodology and results
+- Usage examples (HTTP & WebSocket)
+- Technical details (escape sequences, commands)
+- Performance metrics
+- Best practices
+
+See [reports/README.md](reports/README.md) for how to test and document new applications.
 
 ## Example TUI Apps
 
