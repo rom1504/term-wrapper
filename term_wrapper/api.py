@@ -1,0 +1,248 @@
+"""FastAPI backend for terminal wrapper."""
+
+import asyncio
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from typing import Optional
+from .session_manager import SessionManager
+
+
+app = FastAPI(title="Terminal Wrapper API")
+session_manager = SessionManager()
+
+
+class CreateSessionRequest(BaseModel):
+    """Request model for creating a session."""
+
+    command: list[str]
+    rows: int = 24
+    cols: int = 80
+    env: Optional[dict] = None
+
+
+class WriteInputRequest(BaseModel):
+    """Request model for writing input to terminal."""
+
+    data: str
+
+
+class ResizeRequest(BaseModel):
+    """Request model for resizing terminal."""
+
+    rows: int
+    cols: int
+
+
+@app.post("/sessions")
+async def create_session(request: CreateSessionRequest) -> JSONResponse:
+    """Create a new terminal session.
+
+    Args:
+        request: Session creation request
+
+    Returns:
+        JSON response with session_id
+    """
+    session_id = session_manager.create_session(
+        command=request.command,
+        rows=request.rows,
+        cols=request.cols,
+        env=request.env,
+    )
+
+    session = session_manager.get_session(session_id)
+    if session:
+        # Start reading from terminal
+        await session.terminal.start_reading()
+
+    return JSONResponse({"session_id": session_id})
+
+
+@app.get("/sessions")
+async def list_sessions() -> JSONResponse:
+    """List all active sessions.
+
+    Returns:
+        JSON response with list of session IDs
+    """
+    sessions = session_manager.list_sessions()
+    return JSONResponse({"sessions": sessions})
+
+
+@app.get("/sessions/{session_id}")
+async def get_session_info(session_id: str) -> JSONResponse:
+    """Get session information.
+
+    Args:
+        session_id: Session identifier
+
+    Returns:
+        JSON response with session info
+
+    Raises:
+        HTTPException: If session not found
+    """
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return JSONResponse(
+        {
+            "session_id": session_id,
+            "alive": session.terminal.is_alive(),
+            "rows": session.terminal.rows,
+            "cols": session.terminal.cols,
+        }
+    )
+
+
+@app.delete("/sessions/{session_id}")
+async def delete_session(session_id: str) -> JSONResponse:
+    """Delete a terminal session.
+
+    Args:
+        session_id: Session identifier
+
+    Returns:
+        JSON response with success status
+
+    Raises:
+        HTTPException: If session not found
+    """
+    success = session_manager.delete_session(session_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return JSONResponse({"status": "deleted"})
+
+
+@app.post("/sessions/{session_id}/input")
+async def write_input(session_id: str, request: WriteInputRequest) -> JSONResponse:
+    """Write input to terminal session.
+
+    Args:
+        session_id: Session identifier
+        request: Input data request
+
+    Returns:
+        JSON response with success status
+
+    Raises:
+        HTTPException: If session not found
+    """
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    session.terminal.write(request.data.encode())
+    return JSONResponse({"status": "ok"})
+
+
+@app.post("/sessions/{session_id}/resize")
+async def resize_terminal(session_id: str, request: ResizeRequest) -> JSONResponse:
+    """Resize terminal session.
+
+    Args:
+        session_id: Session identifier
+        request: Resize request
+
+    Returns:
+        JSON response with success status
+
+    Raises:
+        HTTPException: If session not found
+    """
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    session.terminal.resize(request.rows, request.cols)
+    return JSONResponse({"status": "ok"})
+
+
+@app.get("/sessions/{session_id}/output")
+async def get_output(session_id: str, clear: bool = True) -> JSONResponse:
+    """Get terminal output.
+
+    Args:
+        session_id: Session identifier
+        clear: Whether to clear buffer after reading
+
+    Returns:
+        JSON response with output data
+
+    Raises:
+        HTTPException: If session not found
+    """
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    output = await session.get_output(clear=clear)
+    return JSONResponse({"output": output.decode("utf-8", errors="replace")})
+
+
+@app.websocket("/sessions/{session_id}/ws")
+async def websocket_endpoint(websocket: WebSocket, session_id: str):
+    """WebSocket endpoint for real-time terminal interaction.
+
+    Args:
+        websocket: WebSocket connection
+        session_id: Session identifier
+    """
+    session = session_manager.get_session(session_id)
+    if not session:
+        await websocket.close(code=1008, reason="Session not found")
+        return
+
+    await websocket.accept()
+
+    async def send_output():
+        """Send terminal output to WebSocket."""
+        while True:
+            try:
+                await asyncio.sleep(0.05)  # 50ms polling interval
+                output = await session.get_output(clear=True)
+                if output:
+                    await websocket.send_bytes(output)
+
+                if not session.terminal.is_alive():
+                    await websocket.send_text("__TERMINAL_CLOSED__")
+                    break
+            except WebSocketDisconnect:
+                break
+            except Exception:
+                break
+
+    async def receive_input():
+        """Receive input from WebSocket and send to terminal."""
+        while True:
+            try:
+                data = await websocket.receive_bytes()
+                session.terminal.write(data)
+            except WebSocketDisconnect:
+                break
+            except Exception:
+                break
+
+    # Run both tasks concurrently
+    try:
+        await asyncio.gather(send_output(), receive_input())
+    except Exception:
+        pass
+    finally:
+        try:
+            await websocket.close()
+        except Exception:
+            pass
+
+
+@app.get("/health")
+async def health_check() -> JSONResponse:
+    """Health check endpoint.
+
+    Returns:
+        JSON response with health status
+    """
+    return JSONResponse({"status": "healthy"})
