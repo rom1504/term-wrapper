@@ -23,11 +23,23 @@ class TerminalApp {
         // Setup event listeners
         this.setupEventListeners();
 
-        // Auto-connect if URL has session parameter
+        // Get filename from URL or use default
         const params = new URLSearchParams(window.location.search);
         const sessionId = params.get('session');
+        const filename = params.get('file') || '/tmp/mytest';
+
+        // Update filename display
+        const filenameEl = document.getElementById('filename');
+        if (filenameEl) {
+            filenameEl.textContent = filename;
+        }
+
+        // Auto-connect
         if (sessionId) {
             this.connectToExistingSession(sessionId);
+        } else {
+            // Auto-start vim with the specified file
+            this.connectToVim(filename);
         }
     }
 
@@ -66,12 +78,8 @@ class TerminalApp {
         this.term.open(document.getElementById('terminal'));
         this.fitAddon.fit();
 
-        // Welcome message
-        this.term.writeln('\x1b[1;32m╔═══════════════════════════════════════╗\x1b[0m');
-        this.term.writeln('\x1b[1;32m║     Terminal Wrapper Web Frontend    ║\x1b[0m');
-        this.term.writeln('\x1b[1;32m╚═══════════════════════════════════════╝\x1b[0m');
-        this.term.writeln('');
-        this.term.writeln('Enter a command above and click Connect to start.');
+        // Show connecting message
+        this.term.writeln('\x1b[1;32mConnecting to vim...\x1b[0m');
         this.term.writeln('');
 
         // Handle input from terminal
@@ -98,22 +106,9 @@ class TerminalApp {
     }
 
     setupEventListeners() {
-        // Connect button
-        document.getElementById('connectBtn').addEventListener('click', () => {
-            this.connect();
-        });
-
         // Disconnect button
         document.getElementById('disconnectBtn').addEventListener('click', () => {
             this.disconnect();
-        });
-
-        // Enter key in inputs
-        document.getElementById('commandInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.connect();
-        });
-        document.getElementById('argsInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.connect();
         });
 
         // Window resize
@@ -139,25 +134,16 @@ class TerminalApp {
         });
     }
 
-    async connect() {
-        const command = document.getElementById('commandInput').value.trim();
-        if (!command) {
-            this.setStatus('Please enter a command', 'error');
-            return;
-        }
-
-        const args = document.getElementById('argsInput').value.trim();
-        const commandArray = args ? [command, ...args.split(' ')] : [command];
-
-        this.setStatus('Creating session...', 'connecting');
+    async connectToVim(filename) {
+        this.setStatus('Starting vim...', 'connecting');
 
         try {
-            // Create session
+            // Create vim session - ONLY vim is allowed
             const response = await fetch(`${this.apiBase}/sessions`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    command: commandArray,
+                    command: ['vim', filename],
                     rows: this.term.rows,
                     cols: this.term.cols,
                     env: {
@@ -199,8 +185,7 @@ class TerminalApp {
         this.ws.binaryType = 'arraybuffer';
 
         this.ws.onopen = () => {
-            this.setStatus(`Connected (Session: ${this.sessionId})`, 'connected');
-            document.getElementById('connectBtn').disabled = true;
+            this.setStatus(`Connected to vim (Session: ${this.sessionId})`, 'connected');
             document.getElementById('disconnectBtn').disabled = false;
             this.term.focus();
         };
@@ -225,7 +210,6 @@ class TerminalApp {
 
         this.ws.onclose = () => {
             this.setStatus('Disconnected', 'error');
-            document.getElementById('connectBtn').disabled = false;
             document.getElementById('disconnectBtn').disabled = true;
             this.ws = null;
         };
@@ -253,9 +237,8 @@ class TerminalApp {
         url.searchParams.delete('session');
         window.history.pushState({}, '', url);
 
-        document.getElementById('connectBtn').disabled = false;
         document.getElementById('disconnectBtn').disabled = true;
-        this.setStatus('Not connected', '');
+        this.setStatus('Vim session closed', '');
     }
 
     async reconnect() {

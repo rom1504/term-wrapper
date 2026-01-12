@@ -13,14 +13,12 @@
     <div id="app">
         <div id="header">
             <div class="header-content">
-                <h1>🖥️ Terminal Wrapper</h1>
+                <h1>🖥️ Vim Editor</h1>
                 <div class="controls">
-                    <input type="text" id="commandInput" placeholder="Command (e.g., vim, bash, python3)" value="bash">
-                    <input type="text" id="argsInput" placeholder="Arguments (optional)">
-                    <button id="connectBtn" class="btn-primary">Connect</button>
+                    <span id="filename" class="filename">/tmp/mytest</span>
                     <button id="disconnectBtn" class="btn-secondary" disabled>Disconnect</button>
                 </div>
-                <div id="status" class="status">Not connected</div>
+                <div id="status" class="status">Connecting to vim...</div>
             </div>
         </div>
 

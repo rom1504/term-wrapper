@@ -44,6 +44,18 @@ h1 {
     gap: 0.5rem;
     margin-bottom: 0.5rem;
     flex-wrap: wrap;
+    align-items: center;
+}
+
+.filename {
+    padding: 0.5rem 1rem;
+    background: #1e1e1e;
+    border: 1px solid #4CAF50;
+    color: #4CAF50;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    flex: 1;
 }
 
 input[type="text"] {
