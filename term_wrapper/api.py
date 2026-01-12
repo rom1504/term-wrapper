@@ -1,15 +1,23 @@
 """FastAPI backend for terminal wrapper."""
 
 import asyncio
+import os
+from pathlib import Path
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional
 from .session_manager import SessionManager
 
 
 app = FastAPI(title="Terminal Wrapper API")
+
+# Mount frontend static files
+frontend_dir = Path(__file__).parent.parent / "frontend"
+if frontend_dir.exists():
+    app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
 
 # Add CORS middleware for browser access
 app.add_middleware(
@@ -257,3 +265,19 @@ async def health_check() -> JSONResponse:
         JSON response with health status
     """
     return JSONResponse({"status": "healthy"})
+
+
+@app.get("/")
+async def root():
+    """Serve the frontend application.
+
+    Returns:
+        HTML page
+    """
+    index_path = frontend_dir / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
+    return JSONResponse(
+        {"message": "Frontend not found. API is running at /health"},
+        status_code=404
+    )
