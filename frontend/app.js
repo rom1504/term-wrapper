@@ -23,23 +23,24 @@ class TerminalApp {
         // Setup event listeners
         this.setupEventListeners();
 
-        // Get filename from URL or use default
+        // Get command from URL or use default
         const params = new URLSearchParams(window.location.search);
         const sessionId = params.get('session');
-        const filename = params.get('file') || '/tmp/mytest';
+        const cmd = params.get('cmd') || 'vim';
+        const args = params.get('args') || '/tmp/mytest';
 
         // Update filename display
         const filenameEl = document.getElementById('filename');
         if (filenameEl) {
-            filenameEl.textContent = filename;
+            filenameEl.textContent = `${cmd} ${args}`;
         }
 
         // Auto-connect
         if (sessionId) {
             this.connectToExistingSession(sessionId);
         } else {
-            // Auto-start vim with the specified file
-            this.connectToVim(filename);
+            // Auto-start command with the specified args
+            this.connectToTerminal(cmd, args);
         }
     }
 
@@ -79,7 +80,7 @@ class TerminalApp {
         this.fitAddon.fit();
 
         // Show connecting message
-        this.term.writeln('\x1b[1;32mConnecting to vim...\x1b[0m');
+        this.term.writeln('\x1b[1;32mConnecting to terminal...\x1b[0m');
         this.term.writeln('');
 
         // Handle input from terminal
@@ -134,16 +135,17 @@ class TerminalApp {
         });
     }
 
-    async connectToVim(filename) {
-        this.setStatus('Starting vim...', 'connecting');
+    async connectToTerminal(cmd, args) {
+        this.setStatus('Starting terminal...', 'connecting');
 
         try {
-            // Create vim session - ONLY vim is allowed
+            // Create terminal session with specified command
+            const command = args ? [cmd, args] : [cmd];
             const response = await fetch(`${this.apiBase}/sessions`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    command: ['vim', filename],
+                    command: command,
                     rows: this.term.rows,
                     cols: this.term.cols,
                     env: {
@@ -185,7 +187,7 @@ class TerminalApp {
         this.ws.binaryType = 'arraybuffer';
 
         this.ws.onopen = () => {
-            this.setStatus(`Connected to vim (Session: ${this.sessionId})`, 'connected');
+            this.setStatus(`Connected (Session: ${this.sessionId})`, 'connected');
             document.getElementById('disconnectBtn').disabled = false;
             this.term.focus();
         };
@@ -238,7 +240,7 @@ class TerminalApp {
         window.history.pushState({}, '', url);
 
         document.getElementById('disconnectBtn').disabled = true;
-        this.setStatus('Vim session closed', '');
+        this.setStatus('Terminal session closed', '');
     }
 
     async reconnect() {
