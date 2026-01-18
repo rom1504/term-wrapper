@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        uv sync
+
+    - name: Run unit tests
+      run: |
+        uv run pytest tests/test_terminal.py tests/test_session_manager.py tests/test_api.py -v
+
+    - name: Install vim for integration tests
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y vim
+
+    - name: Run vim integration tests
+      run: |
+        uv run pytest tests/test_vim.py -v
+
+    - name: Run frontend e2e tests
+      run: |
+        uv run pytest tests/test_frontend_e2e.py -v
+
+    # Note: Claude CLI tests (tests/test_claude.py) are skipped in CI
+    # as they require authentication and make real API calls.
+    # Run them locally with: uv run pytest tests/test_claude.py -v

@@ -1,5 +1,7 @@
 # Terminal Wrapper
 
+[![CI](https://github.com/rom1504/terminal_wrapper/workflows/CI/badge.svg)](https://github.com/rom1504/terminal_wrapper/actions/workflows/ci.yml)
+
 A full-featured terminal emulator with web backend that can run any TUI (Text User Interface) application and control it via HTTP/WebSocket APIs.
 
 ## Features
@@ -146,6 +148,7 @@ We've tested various TUI applications with detailed reports:
 | Application | Status | Report | Tests |
 |-------------|--------|--------|-------|
 | vim | ✅ Fully Functional | [reports/vim_report.md](reports/vim_report.md) | [tests/test_vim.py](tests/test_vim.py) |
+| Claude CLI | ✅ Fully Functional | [reports/claude_report.md](reports/claude_report.md) | [tests/test_claude.py](tests/test_claude.py) |
 
 Each report includes:
 - Test methodology and results
