@@ -45,9 +45,15 @@ class Terminal:
 
         if self.pid == 0:
             # Child process
-            if env:
-                os.environ.update(env)
-            os.execvp(command[0], command)
+            try:
+                if env:
+                    os.environ.update(env)
+                os.execvp(command[0], command)
+            except Exception as e:
+                # If exec fails, print error and exit child process
+                import sys
+                print(f"Failed to execute command: {e}", file=sys.stderr)
+                sys.exit(1)
         else:
             # Parent process
             self._set_terminal_size(self.rows, self.cols)
@@ -66,6 +72,30 @@ class Terminal:
             # Set non-blocking mode
             flags = fcntl.fcntl(self.master_fd, fcntl.F_GETFL)
             fcntl.fcntl(self.master_fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+
+            # Check if child process started successfully
+            import time
+            time.sleep(0.1)  # Give child a moment to start
+            try:
+                pid, status = os.waitpid(self.pid, os.WNOHANG)
+                if pid != 0:
+                    # Child exited immediately
+                    exit_code = os.WEXITSTATUS(status) if os.WIFEXITED(status) else -1
+                    if exit_code != 0:
+                        # Non-zero exit = command failed to start
+                        self._running = False
+                        os.close(self.master_fd)
+                        self.master_fd = None
+                        raise RuntimeError(
+                            f"Command failed to start (exit code {exit_code}). "
+                            f"Command: {command}. "
+                            f"This may indicate: (1) command not found, (2) exec format error, "
+                            f"or (3) missing dependencies. Try wrapping in a shell: "
+                            f"['bash', '-c', '{' '.join(command)}']"
+                        )
+                    # else: exit code 0 means command ran successfully and finished quickly
+            except ChildProcessError:
+                pass  # Child is still running, which is good
 
     def _set_terminal_size(self, rows: int, cols: int) -> None:
         """Set the terminal window size.
