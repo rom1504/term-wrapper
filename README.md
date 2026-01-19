@@ -11,7 +11,7 @@ A full-featured terminal emulator with web backend that can run any TUI (Text Us
 - **Session Management**: Create, manage, and control multiple terminal sessions
 - **CLI Subcommands**: Scriptable terminal control from bash/shell without writing Python
 - **Python Client Library**: High-level primitives (wait_for_text, wait_for_quiet, get_text)
-- **Comprehensive Tests**: 117 tests covering unit, integration, and e2e scenarios
+- **Comprehensive Tests**: 118 tests covering unit, integration, and e2e scenarios
 
 ## What's Supported
 

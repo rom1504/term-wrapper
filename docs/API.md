@@ -373,6 +373,12 @@ curl -s http://localhost:8000/sessions/$SESSION/output | jq -r .output
 
 ### 3. Using the CLI Client
 ```bash
-# Easiest way for interactive use
-uv run python -m term_wrapper.cli python3
+# Easiest way for interactive use - CLI subcommands
+uv run term-wrapper create python3
+
+# Or attach to existing session interactively
+uv run term-wrapper attach <session_id>
+
+# See all available commands
+uv run term-wrapper --help
 ```

@@ -47,7 +47,8 @@ Each report should include:
 | Application | Status | Report | Tests |
 |-------------|--------|--------|-------|
 | vim | ✅ Fully Functional | [vim_report.md](vim_report.md) | [test_vim.py](../tests/test_vim.py) |
-| _More coming soon..._ | | | |
+| htop | ✅ Fully Functional | [htop_report.md](htop_report.md) | [test_htop.py](../tests/test_htop.py) |
+| Claude CLI | ✅ Fully Functional | [claude_report.md](claude_report.md) | [test_claude.py](../tests/test_claude.py) |
 
 ## How to Add a New Report
 
@@ -273,7 +274,6 @@ await asyncio.sleep(0.3)  # Wait for save
 
 Suggestions for next reports:
 
-- [ ] **htop** - Interactive process viewer
 - [ ] **nano** - Simple text editor
 - [ ] **tmux** - Terminal multiplexer
 - [ ] **less** - File pager

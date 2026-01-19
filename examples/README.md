@@ -51,8 +51,29 @@ for clean, readable code with proper output polling.
 python examples/claude_interactive.py
 ```
 
+## CLI Alternative
+
+These examples use the Python client library. You can also use the `term-wrapper` CLI commands directly:
+
+```bash
+# Create a session
+SESSION=$(uv run term-wrapper create htop | python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
+
+# Send input
+uv run term-wrapper send $SESSION "q"
+
+# Get output
+uv run term-wrapper get-text $SESSION
+
+# Delete session
+uv run term-wrapper delete $SESSION
+```
+
+See the [CLI documentation](../README.md#cli-subcommands) for all available commands.
+
 ## Tips
 
 - Use `claude_interactive.py` to see the new helper primitives in action
 - Check the skill documentation: `skills/term-wrapper.md`
 - All examples use the new primitives: `wait_for_text()`, `wait_for_quiet()`, `get_text()`
+- For shell scripting, prefer CLI commands over Python for simplicity
