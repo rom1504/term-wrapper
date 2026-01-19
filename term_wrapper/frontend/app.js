@@ -208,6 +208,11 @@ class TerminalApp {
         this.ws.onopen = () => {
             this.setStatus(`Connected (Session: ${this.sessionId})`, 'connected');
             document.getElementById('disconnectBtn').disabled = false;
+
+            // Sync backend terminal size with frontend display
+            // (in case session was created with different dimensions)
+            this.resizeSession(this.term.rows, this.term.cols);
+
             this.term.focus();
         };
 

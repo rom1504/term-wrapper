@@ -48,3 +48,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["term_wrapper"]
+
+[dependency-groups]
+dev = [
+    "playwright>=1.57.0",
+]
