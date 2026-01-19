@@ -1,0 +1,269 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #1e1e1e;
+    color: #fff;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+#header {
+    background: #2d2d2d;
+    border-bottom: 1px solid #3e3e3e;
+    padding: 1rem;
+    flex-shrink: 0;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #4CAF50;
+}
+
+.controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filename {
+    padding: 0.5rem 1rem;
+    background: #1e1e1e;
+    border: 1px solid #4CAF50;
+    color: #4CAF50;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    flex: 1;
+}
+
+input[type="text"] {
+    padding: 0.5rem;
+    background: #1e1e1e;
+    border: 1px solid #3e3e3e;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    flex: 1;
+    min-width: 150px;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background: #4CAF50;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #45a049;
+}
+
+.btn-secondary {
+    background: #666;
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #777;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.status {
+    font-size: 0.85rem;
+    padding: 0.5rem;
+    background: #1e1e1e;
+    border-radius: 4px;
+    border: 1px solid #3e3e3e;
+}
+
+.status.connected {
+    border-color: #4CAF50;
+    color: #4CAF50;
+}
+
+.status.error {
+    border-color: #f44336;
+    color: #f44336;
+}
+
+#terminal-container {
+    flex: 1;
+    overflow: hidden;
+    background: #000;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+#terminal {
+    width: 100%;
+    height: 100%;
+    max-width: 1200px;
+}
+
+.xterm {
+    height: 100% !important;
+    padding: 0.5rem;
+}
+
+.xterm-viewport {
+    background-color: #000 !important;
+}
+
+/* Mobile controls */
+#mobile-controls {
+    display: none;
+    background: #2d2d2d;
+    border-top: 1px solid #3e3e3e;
+    padding: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    overflow-x: auto;
+}
+
+.mobile-btn {
+    padding: 0.75rem 1rem;
+    background: #3e3e3e;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    min-width: 60px;
+    font-weight: bold;
+}
+
+.mobile-btn:active {
+    background: #4e4e4e;
+    transform: scale(0.95);
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.2rem;
+    }
+
+    .controls {
+        flex-direction: column;
+    }
+
+    input[type="text"] {
+        width: 100%;
+    }
+
+    #mobile-controls.mobile-only {
+        display: flex;
+    }
+
+    #terminal-container {
+        padding: 0.5rem;
+    }
+
+    .xterm {
+        padding: 0.25rem;
+    }
+}
+
+/* Tablet landscape */
+@media (max-width: 1024px) and (orientation: landscape) {
+    #header {
+        padding: 0.5rem;
+    }
+
+    h1 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .controls {
+        gap: 0.25rem;
+    }
+
+    #mobile-controls.mobile-only {
+        display: flex;
+    }
+}
+
+/* Touch device detection - show mobile controls */
+@media (hover: none) and (pointer: coarse) {
+    #mobile-controls {
+        display: flex;
+    }
+}
+
+/* Loading indicator */
+.loading {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #4CAF50;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3e3e3e;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #4e4e4e;
+}

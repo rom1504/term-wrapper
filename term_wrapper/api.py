@@ -15,7 +15,7 @@ from .session_manager import SessionManager
 app = FastAPI(title="Terminal Wrapper API")
 
 # Mount frontend static files
-frontend_dir = Path(__file__).parent.parent / "frontend"
+frontend_dir = Path(__file__).parent / "frontend"
 if frontend_dir.exists():
     app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
 
