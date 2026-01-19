@@ -337,6 +337,59 @@ Want to use term-wrapper with Claude Code? Check out the Term Wrapper skill!
 
 The skill enables Claude to control any terminal application programmatically. See [skill/SKILL.md](skill/SKILL.md) for complete instructions on using term-wrapper with CLI commands, Python, or HTTP APIs.
 
+## Web Frontend
+
+Access any terminal application through your browser with the included web frontend.
+
+### Quick Start
+
+Start the server and open your browser:
+
+```bash
+# Start server
+uv run python main.py
+
+# Open in browser (automatically available)
+http://localhost:8000/
+```
+
+### Launch Any Application
+
+Use URL parameters to launch specific apps:
+
+```bash
+# Launch htop
+http://localhost:8000/?cmd=htop
+
+# Launch vim with a file
+http://localhost:8000/?cmd=vim&args=/tmp/myfile.txt
+
+# Launch Python REPL
+http://localhost:8000/?cmd=python3
+```
+
+### One-Command Launch
+
+Shell function to start server and open browser automatically:
+
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+tweb() {
+    local cmd="${1:-bash}"
+    if ! curl -s http://localhost:8000/health > /dev/null 2>&1; then
+        cd /path/to/term_wrapper && uv run python main.py > /tmp/term-wrapper.log 2>&1 &
+        sleep 2
+    fi
+    open "http://localhost:8000/?cmd=${cmd}"  # or xdg-open on Linux
+}
+
+# Usage
+tweb htop                # Launch htop in browser
+tweb vim /tmp/test.txt   # Launch vim in browser
+```
+
+**Full documentation:** See [frontend/README.md](frontend/README.md) for complete guide including mobile support, customization, and troubleshooting.
+
 ## Example TUI Apps
 
 ### Interactive htop Demo (`examples/htop_demo.py`)
@@ -388,6 +441,10 @@ term_wrapper/
 ├── skill/                # Claude Code skill
 │   └── SKILL.md          # Term Wrapper skill for AI agents
 ├── frontend/             # Web frontend with xterm.js
+│   ├── README.md         # Frontend documentation and usage guide
+│   ├── index.html        # Main web interface
+│   ├── app.js           # Frontend application logic
+│   └── style.css        # Styles and responsive design
 ├── docs/                 # Documentation
 ├── scripts/              # Utility scripts
 ├── main.py              # Server entry point
