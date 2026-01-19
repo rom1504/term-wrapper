@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-01-19
+
+Major release with server management improvements and frontend fixes.
+
+### Added
+- File locking to prevent multiple servers starting concurrently
+  - Uses `fcntl.flock` to coordinate between parallel CLI invocations
+  - Only one server starts even with concurrent commands
+- New `term-wrapper stop` command to shutdown the server
+  - Graceful shutdown with SIGTERM, force kill with SIGKILL if needed
+  - Cleans up state files (port, PID) automatically
+- Session `command` field in API responses
+
+### Fixed
+- Multiple servers starting when running CLI commands in parallel
+- Frontend always displaying "vim /tmp/mytest" instead of actual command
+  - Frontend now fetches session info and shows correct command
+
+### Changed
+- TerminalSession now stores the command that was executed
+- Server manager uses file locking for atomic server startup
+
 ## [0.3.3] - 2026-01-19
 
 Critical patch fixing frontend files not being included in PyPI package.
