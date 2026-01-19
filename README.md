@@ -154,6 +154,7 @@ We've tested various TUI applications with detailed reports:
 | Application | Status | Report | Tests |
 |-------------|--------|--------|-------|
 | vim | ✅ Fully Functional | [reports/vim_report.md](reports/vim_report.md) | [tests/test_vim.py](tests/test_vim.py) |
+| htop | ✅ Fully Functional | [reports/htop_report.md](reports/htop_report.md) | [tests/test_htop.py](tests/test_htop.py) |
 | Claude CLI | ✅ Fully Functional | [reports/claude_report.md](reports/claude_report.md) | [tests/test_claude.py](tests/test_claude.py) |
 
 Each report includes:
@@ -163,7 +164,7 @@ Each report includes:
 - Performance metrics
 - Best practices
 
-See [reports/README.md](reports/README.md) for how to test and document new applications.
+**Want to add a new application?** See [reports/TESTING_GUIDE.md](reports/TESTING_GUIDE.md) for a comprehensive step-by-step guide on testing and documenting new TUI applications.
 
 ## Example TUI Apps
 
