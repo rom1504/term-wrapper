@@ -26,13 +26,13 @@ A full-featured terminal emulator with web backend that can run any TUI (Text Us
 - **Terminal resize**: Dynamic window resizing with SIGWINCH
 - **Multiple sessions**: Concurrent terminal sessions with session management
 
-### 🔧 Backend Only (Raw Output)
+### 🌐 Optional Web Frontend
 
-When using the REST API without a terminal emulator frontend:
-- Complex TUI apps output raw ANSI escape sequences
-- Pair with a terminal emulator like [xterm.js](https://xtermjs.org/) for rendering
-
-**Included**: Our web frontend (`frontend/`) provides full xterm.js integration with mobile support.
+The included web frontend (`frontend/`) serves as a **universal web mirror** for any TUI application:
+- Access any terminal app through your browser with full rendering
+- Built with [xterm.js](https://xtermjs.org/) for complete ANSI escape sequence support
+- Mobile-friendly interface for running TUI apps on phones/tablets
+- Not required - the REST/CLI API works standalone for programmatic control
 
 ## Architecture
 
