@@ -336,15 +336,41 @@ def test_cli_generic_error():
 
 
 def test_cli_web():
-    """Test 'web' subcommand opens browser."""
+    """Test 'web' subcommand opens browser with existing session ID."""
     with mock_cli_environment() as (MockClient, MockServerManager):
         mock_instance = MockClient.return_value
 
-        with patch("sys.argv", ["term-wrapper", "web", "test-session-123"]):
+        # Use valid UUID format for session ID
+        test_session_id = "12345678-1234-1234-1234-123456789abc"
+
+        with patch("sys.argv", ["term-wrapper", "web", test_session_id]):
             with patch("sys.stdout", new_callable=MagicMock):
                 with patch("term_wrapper.cli.webbrowser.open") as mock_browser:
                     from term_wrapper.cli import sync_main
                     sync_main()
 
                     # Check that browser was opened with correct URL
-                    mock_browser.assert_called_once_with("http://localhost:8888/?session=test-session-123")
+                    mock_browser.assert_called_once_with(f"http://localhost:8888/?session={test_session_id}")
+
+
+def test_cli_web_create_command():
+    """Test 'web' subcommand creates session and opens browser when command is provided."""
+    with mock_cli_environment() as (MockClient, MockServerManager):
+        mock_instance = MockClient.return_value
+        mock_instance.create_session.return_value = "new-session-uuid"
+
+        with patch("sys.argv", ["term-wrapper", "web", "htop"]):
+            with patch("sys.stdout", new_callable=MagicMock):
+                with patch("term_wrapper.cli.webbrowser.open") as mock_browser:
+                    from term_wrapper.cli import sync_main
+                    sync_main()
+
+                    # Check that create_session was called
+                    mock_instance.create_session.assert_called_once_with(
+                        command=["htop"],
+                        rows=40,
+                        cols=120
+                    )
+
+                    # Check that browser was opened with the new session
+                    mock_browser.assert_called_once_with("http://localhost:8888/?session=new-session-uuid")
