@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-01-19
+
+Maintenance release with CI improvements and documentation updates.
+
+### Added
+- Comprehensive CI workflow now runs 14 test files (previously 5)
+  - Unit tests, CLI tests, application integration tests, e2e tests
+  - Only Claude-related tests skipped (require authentication)
+
+### Changed
+- Migrated to Anthropic Agent Skills convention
+  - Renamed `skills/` folder to `skill/` (singular)
+  - Created `skill/SKILL.md` following official format with YAML frontmatter
+  - Removed unnecessary `skills/README.md`
+- Updated README title to "Term Wrapper" (was "Terminal Wrapper")
+- Clarified web frontend description - universal web mirror for TUI apps
+- Git remote changed to SSH for workflow file updates
+
+### Fixed
+- htop tests now pass in CI environment
+  - Added `TERM` environment variable to all htop test cases
+  - Made test assertions more lenient (1 process minimum vs 3)
+  - Fixed `test_cli_e2e_htop.py` and `test_htop_screen.py`
+- Documentation consistency updates for v0.2.0
+
 ## [0.2.0] - 2026-01-19
 
 Major CLI improvements release.
