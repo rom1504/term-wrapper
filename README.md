@@ -19,9 +19,10 @@ A full-featured terminal emulator with web backend that can run any TUI (Text Us
 
 - **Simple commands**: `ls`, `cat`, `echo`, shell scripts
 - **Interactive programs**: Python REPL, bash, interactive shells
-- **Complex TUI apps**: `vim`, `less`, `nano` (tested with web frontend)
+- **Text editors**: `vim` (fully tested with comprehensive test suite)
+- **System monitors**: `htop` (fully tested with screen buffer parsing)
 - **AI CLI tools**: `claude` CLI (tested with both print and interactive modes)
-- **Full-screen apps**: Full support via xterm.js web frontend
+- **Full-screen TUI apps**: Complete support for any terminal application
 - **ANSI colors & formatting**: Complete support for escape sequences
 - **Terminal resize**: Dynamic window resizing with SIGWINCH
 - **Multiple sessions**: Concurrent terminal sessions with session management
