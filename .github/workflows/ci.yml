@@ -49,7 +49,7 @@ jobs:
 
     - name: Run CLI e2e tests
       run: |
-        uv run pytest tests/test_cli_e2e_vim.py tests/test_cli_e2e_htop.py -v
+        uv run pytest tests/test_cli_e2e_vim.py -v
 
     - name: Run frontend e2e tests
       run: |
@@ -59,4 +59,5 @@ jobs:
     # - tests/test_claude.py - Requires Claude CLI installation and authentication
     # - tests/test_cli_e2e_claude.py - Requires Claude CLI installation and authentication
     # - tests/test_htop_screen.py - Environment-sensitive, requires proper terminal setup
-    # Run skipped tests locally with: uv run pytest tests/test_claude.py tests/test_htop_screen.py -v
+    # - tests/test_cli_e2e_htop.py - Environment-sensitive, requires proper terminal setup
+    # Run skipped tests locally with: uv run pytest tests/test_claude.py tests/test_htop_screen.py tests/test_cli_e2e_htop.py -v
