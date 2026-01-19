@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-01-19
+
+Minor release with automatic script detection and improved usability.
+
+### Added
+- **Auto-detection of scripts without shebangs**
+  - Automatically wraps text scripts in bash when shebang is missing
+  - Detects binaries (ELF, null bytes) and executes them directly
+  - Scripts like `claude` now work without manual bash wrapping
+  - Zero user changes needed - `term-wrapper create claude` just works
+  - Transparent: doesn't affect normal commands or binaries
+
+### Example
+```bash
+# Before: Required manual bash wrapping
+term-wrapper create bash -c "claude"
+
+# Now: Works automatically
+term-wrapper create claude
+```
+
 ## [0.4.3] - 2026-01-19
 
 Patch release improving command execution error handling and server stability.
