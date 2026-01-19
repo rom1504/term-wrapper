@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.5] - 2026-01-19
+
+Critical fix for slow touch scrolling on mobile.
+
+### Fixed
+- **Much faster touch scrolling with variable speed**
+  - Slow swipe: 5 lines per 50px (was 3)
+  - Fast swipe: 8 lines per 50px
+  - Very fast swipe: 12 lines per 50px (4x faster than before!)
+  - Natural feel - swipe speed determines scroll speed
+  - Based on velocity detection (>15px/frame = very fast, >8px/frame = fast)
+
 ## [0.6.4] - 2026-01-19
 
 Minor update adding version display to web frontend.

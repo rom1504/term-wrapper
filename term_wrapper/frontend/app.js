@@ -397,8 +397,18 @@ class TerminalApp {
             this.isScrolling = true;
             e.preventDefault(); // Prevent default to use custom scrolling
 
-            // Calculate scroll amount (faster scrolling, 3 lines per 50px)
-            const scrollAmount = Math.round(diff / 50 * 3);
+            // Variable speed based on swipe velocity for natural feel
+            const velocity = Math.abs(diff);
+            let multiplier;
+            if (velocity > 15) {
+                multiplier = 12;  // Very fast swipe = 12 lines per 50px
+            } else if (velocity > 8) {
+                multiplier = 8;   // Fast swipe = 8 lines per 50px
+            } else {
+                multiplier = 5;   // Slow swipe = 5 lines per 50px (still faster than old 3)
+            }
+
+            const scrollAmount = Math.round(diff / 50 * multiplier);
 
             if (scrollAmount !== 0) {
                 this.term.scrollLines(scrollAmount); // Positive diff (finger down) = scroll down
