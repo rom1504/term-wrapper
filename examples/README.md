@@ -45,9 +45,9 @@ Parsing htop output to get top memory-using processes.
 python examples/htop_demo.py
 ```
 
-## Claude Code Examples
+## Claude Code Example
 
-### `claude_interactive.py` ⭐ RECOMMENDED
+### `claude_interactive.py` ⭐
 **Full interactive Claude Code session** with proper UI handling:
 - Handles trust prompt
 - Submits requests interactively
@@ -55,35 +55,15 @@ python examples/htop_demo.py
 - Approves code changes
 - Verifies file creation
 
-Uses output polling and proper timing. This is the complete working example.
+Uses the new primitives (`wait_for_text`, `wait_for_condition`, `wait_for_quiet`)
+for clean, readable code with proper output polling.
 
 ```bash
 python examples/claude_interactive.py
 ```
 
-### `claude_piped.py`
-**Alternative non-interactive approach** using piped stdin:
-- Faster for simple tasks
-- No interactive UI handling needed
-- Good for automation scripts
-
-```bash
-python examples/claude_piped.py
-```
-
-## Key Differences
-
-| Feature | Interactive (`claude_interactive.py`) | Piped (`claude_piped.py`) |
-|---------|--------------------------------------|---------------------------|
-| **Approach** | Full TUI interaction with keyboard input | Pipe request to stdin, bypass TUI |
-| **Speed** | Slower (waits for UI) | Faster (no UI) |
-| **Control** | Full control, see progress | Fire and forget |
-| **Complexity** | Higher (state detection) | Lower (simple command) |
-| **Use case** | When you need to interact mid-task | Simple one-shot requests |
-
 ## Tips
 
 - Use `primitives_demo.py` to learn the new helper methods
 - Use `claude_interactive.py` as template for interactive workflows
-- Use `claude_piped.py` for simple automation
 - Check the skill documentation: `skills/term-wrapper.md`

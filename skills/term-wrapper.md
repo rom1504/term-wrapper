@@ -291,23 +291,7 @@ Term-wrapper's PTY implementation provides:
 
 The raw mode support added to `terminal.py` enables Ink-based applications like Claude Code to receive keyboard input properly.
 
-**Alternative: Piped Input (Non-Interactive)**
-
-For simpler automation where you don't need to see Claude's UI:
-
-```python
-cmd = (
-    'cd /tmp/myproject && '
-    'echo "create hello.py" | claude --dangerously-skip-permissions'
-)
-session_id = client.create_session(command=["bash", "-c", cmd], rows=40, cols=120)
-time.sleep(30)
-screen_data = client.get_screen(session_id)
-```
-
-Piping works because stdin is consumed before Ink's TUI starts, bypassing interactive mode entirely.
-
-**Full Example:** See `examples/claude_interactive_working.py` for a complete, production-ready implementation.
+**Full Example:** See `examples/claude_interactive.py` for a complete, production-ready implementation.
 
 ## Parsing Output
 
