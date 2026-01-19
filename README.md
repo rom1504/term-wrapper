@@ -35,6 +35,12 @@ The included web frontend (`frontend/`) serves as a **universal web mirror** for
 - Mobile-friendly interface for running TUI apps on phones/tablets
 - Not required - the REST/CLI API works standalone for programmatic control
 
+<p align="center">
+  <img src="test_screenshots/web_terminal_htop.png" alt="htop running in web terminal" width="600">
+  <br>
+  <em>Example: htop running in the web terminal UI</em>
+</p>
+
 ## Architecture
 
 ```

@@ -184,7 +184,7 @@ await asyncio.sleep(1)  # Additional time for rendering
 
 ## Example: Debugging Claude Code Vertical Layout
 
-See `debug_claude_vertical.py` for a complete example that:
+See [`docs/examples/debug_claude_vertical.py`](examples/debug_claude_vertical.py) for a complete example that:
 
 1. Creates a Claude Code session
 2. Takes screenshot of initial state
@@ -359,5 +359,5 @@ if not shutil.which("claude"):
 
 - [Playwright Python Documentation](https://playwright.dev/python/)
 - [xterm.js API](https://xtermjs.org/docs/api/terminal/)
-- Example: `debug_claude_vertical.py` in project root
-- Tests: `tests/test_web_playwright.py`
+- Example: [`docs/examples/debug_claude_vertical.py`](examples/debug_claude_vertical.py)
+- Tests: [`tests/test_web_playwright.py`](../tests/test_web_playwright.py)
