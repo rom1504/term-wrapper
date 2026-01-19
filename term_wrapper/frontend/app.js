@@ -298,7 +298,7 @@ class TerminalApp {
         this.term.clear();
         this.setStatus('Connecting to existing session...', 'connecting');
 
-        // Fetch session info to display the command
+        // Fetch session info to display the command and check dimensions
         try {
             const response = await fetch(`${this.apiBase}/sessions/${sessionId}`);
             if (response.ok) {
@@ -306,6 +306,11 @@ class TerminalApp {
                 const filenameEl = document.getElementById('filename');
                 if (filenameEl && info.command) {
                     filenameEl.textContent = info.command.join(' ');
+                }
+
+                // Check if dimensions already match (avoid unnecessary resize)
+                if (info.rows === this.term.rows && info.cols === this.term.cols) {
+                    this.isNewSession = true;  // Skip resize on connect
                 }
             }
         } catch (error) {

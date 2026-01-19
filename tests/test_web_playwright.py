@@ -193,6 +193,11 @@ async def test_web_terminal_htop_rendering():
 @pytest.mark.asyncio
 async def test_web_terminal_claude_rendering():
     """Test that Claude Code renders properly in web terminal."""
+    # Skip in CI environment (Claude CLI shouldn't run in CI)
+    import os
+    if os.getenv("CI"):
+        pytest.skip("Claude test skipped in CI environment")
+
     # Skip if Claude CLI is not available
     import shutil
     if not shutil.which("claude"):
