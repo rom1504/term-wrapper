@@ -24,6 +24,9 @@ class TerminalApp {
         // Setup event listeners
         this.setupEventListeners();
 
+        // Fetch and display version
+        this.fetchVersion();
+
         // Get command from URL or use default
         const params = new URLSearchParams(window.location.search);
         const sessionId = params.get('session');
@@ -42,6 +45,21 @@ class TerminalApp {
         } else {
             // Auto-start command with the specified args
             this.connectToTerminal(cmd, args);
+        }
+    }
+
+    async fetchVersion() {
+        try {
+            const response = await fetch(`${this.apiBase}/version`);
+            if (response.ok) {
+                const data = await response.json();
+                const versionEl = document.getElementById('version');
+                if (versionEl) {
+                    versionEl.textContent = `v${data.version}`;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch version:', error);
         }
     }
 

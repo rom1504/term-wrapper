@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.4] - 2026-01-19
+
+Minor update adding version display to web frontend.
+
+### Added
+- **Version display in web UI**
+  - Shows version number in header (e.g., "v0.6.4")
+  - Fetched from `/version` API endpoint
+  - Uses importlib.metadata when installed, pyproject.toml as fallback
+  - Helps verify correct version is running when debugging
+
 ## [0.6.3] - 2026-01-19
 
 Critical fix for thinking indicator duplication using auto-scroll and ANSI filtering.

@@ -12,6 +12,23 @@ from pydantic import BaseModel
 from typing import Optional
 from .session_manager import SessionManager
 
+# Get package version
+try:
+    from importlib.metadata import version
+    VERSION = version("term-wrapper")
+except Exception:
+    # Fallback to reading from pyproject.toml if not installed
+    try:
+        pyproject_path = Path(__file__).parent.parent / "pyproject.toml"
+        with open(pyproject_path, "r") as f:
+            for line in f:
+                if line.startswith("version = "):
+                    VERSION = line.split("=")[1].strip().strip('"')
+                    break
+            else:
+                VERSION = "unknown"
+    except Exception:
+        VERSION = "unknown"
 
 app = FastAPI(title="Terminal Wrapper API")
 
@@ -339,6 +356,16 @@ async def health_check() -> JSONResponse:
         JSON response with health status
     """
     return JSONResponse({"status": "healthy"})
+
+
+@app.get("/version")
+async def get_version() -> JSONResponse:
+    """Get application version.
+
+    Returns:
+        JSON response with version string
+    """
+    return JSONResponse({"version": VERSION})
 
 
 @app.get("/")
