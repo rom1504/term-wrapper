@@ -65,7 +65,7 @@ class TerminalApp {
                 cyan: '#56b6c2',
                 white: '#abb2bf',
             },
-            scrollback: 10000,
+            scrollback: 1000,  // Reduced from 10000 to prevent old status lines lingering
             tabStopWidth: 8,
         });
 
