@@ -333,3 +333,18 @@ def test_cli_generic_error():
                 with pytest.raises(SystemExit) as exc:
                     sync_main()
                 assert exc.value.code == 1
+
+
+def test_cli_web():
+    """Test 'web' subcommand opens browser."""
+    with mock_cli_environment() as (MockClient, MockServerManager):
+        mock_instance = MockClient.return_value
+
+        with patch("sys.argv", ["term-wrapper", "web", "test-session-123"]):
+            with patch("sys.stdout", new_callable=MagicMock):
+                with patch("term_wrapper.cli.webbrowser.open") as mock_browser:
+                    from term_wrapper.cli import sync_main
+                    sync_main()
+
+                    # Check that browser was opened with correct URL
+                    mock_browser.assert_called_once_with("http://localhost:8888/?session=test-session-123")

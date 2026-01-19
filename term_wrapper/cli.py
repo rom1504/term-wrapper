@@ -5,6 +5,7 @@ import sys
 import termios
 import tty
 import time
+import webbrowser
 from typing import Optional, Callable
 import httpx
 import websockets
@@ -429,6 +430,10 @@ Examples:
     attach_parser = subparsers.add_parser("attach", help="Attach to session interactively")
     attach_parser.add_argument("session_id", help="Session ID")
 
+    # Web (open in browser)
+    web_parser = subparsers.add_parser("web", help="Open session in browser")
+    web_parser.add_argument("session_id", help="Session ID")
+
     args = parser.parse_args()
 
     if not args.command:
@@ -522,6 +527,12 @@ Examples:
         elif args.command == "attach":
             # This needs async
             asyncio.run(attach_interactive(client, args.session_id))
+
+        elif args.command == "web":
+            # Open session in browser
+            web_url = f"{url}/?session={args.session_id}"
+            print(json.dumps({"url": web_url, "session_id": args.session_id}))
+            webbrowser.open(web_url)
 
     except TimeoutError as e:
         print(json.dumps({"error": str(e)}), file=sys.stderr)

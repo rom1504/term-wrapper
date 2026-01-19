@@ -88,7 +88,8 @@ term-wrapper wait-text SESSION_ID TEXT [--timeout SECS]
 term-wrapper wait-quiet SESSION_ID [--duration SECS]
 
 # Interactive
-term-wrapper attach SESSION_ID
+term-wrapper attach SESSION_ID              # WebSocket interactive mode
+term-wrapper web SESSION_ID                 # Open session in browser
 ```
 
 **When to use CLI vs Python:**

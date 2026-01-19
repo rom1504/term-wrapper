@@ -204,6 +204,17 @@ term-wrapper wait-quiet SESSION_ID [--duration SECS] [--timeout SECS]
 
 # Interactive
 term-wrapper attach SESSION_ID              # WebSocket interactive mode
+term-wrapper web SESSION_ID                 # Open session in browser
+```
+
+### Quick Example: Open Session in Browser
+
+```bash
+# Create a session
+SESSION=$(term-wrapper create htop | python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
+
+# Open it in your browser - that's it!
+term-wrapper web $SESSION
 ```
 
 ### Shell Script Example
@@ -212,24 +223,24 @@ term-wrapper attach SESSION_ID              # WebSocket interactive mode
 #!/bin/bash
 # Automate vim file editing
 
-SESSION=$(uv run python -m term_wrapper.cli create vim myfile.txt | \
+SESSION=$(term-wrapper create vim myfile.txt | \
           python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
 
 # Enter insert mode
-uv run python -m term_wrapper.cli send $SESSION "i"
+term-wrapper send $SESSION "i"
 sleep 0.3
 
 # Type content
-uv run python -m term_wrapper.cli send $SESSION "Hello World\nLine 2"
+term-wrapper send $SESSION "Hello World\nLine 2"
 sleep 0.5
 
 # Save and quit (ESC + :wq)
-uv run python -m term_wrapper.cli send $SESSION "\x1b"
-uv run python -m term_wrapper.cli send $SESSION ":wq\r"
+term-wrapper send $SESSION "\x1b"
+term-wrapper send $SESSION ":wq\r"
 sleep 0.5
 
 # Cleanup
-uv run python -m term_wrapper.cli delete $SESSION
+term-wrapper delete $SESSION
 ```
 
 See `examples/` directory for more examples with vim, htop, and Claude Code.
