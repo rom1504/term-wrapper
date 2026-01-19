@@ -4,10 +4,12 @@ import asyncio
 import sys
 import termios
 import tty
-from typing import Optional
+import time
+from typing import Optional, Callable
 import httpx
 import websockets
 import json
+from .utils import strip_ansi, extract_visible_text
 
 
 class TerminalClient:
@@ -21,6 +23,7 @@ class TerminalClient:
         """
         self.base_url = base_url
         self.http_client = httpx.Client(base_url=base_url, timeout=10.0)
+        self._read_marks = {}  # Track read positions per session
 
     def create_session(
         self, command: list[str], rows: int = 24, cols: int = 80, env: Optional[dict] = None
@@ -129,6 +132,152 @@ class TerminalClient:
         response = self.http_client.get(f"/sessions/{session_id}/screen")
         response.raise_for_status()
         return response.json()
+
+    def get_text(self, session_id: str, strip_ansi_codes: bool = True,
+                 source: str = "output") -> str:
+        """Get clean text output from session.
+
+        Args:
+            session_id: Session ID
+            strip_ansi_codes: Whether to remove ANSI escape codes
+            source: Source to read from - "output" (raw, default) or "screen" (2D buffer)
+
+        Returns:
+            Clean text output
+        """
+        if source == "screen":
+            screen = self.get_screen(session_id)
+            text = extract_visible_text(screen['lines'])
+        else:
+            text = self.get_output(session_id, clear=False)
+            if strip_ansi_codes:
+                text = strip_ansi(text)
+
+        return text
+
+    def wait_for_text(self, session_id: str, text: str, timeout: float = 30,
+                     poll_interval: float = 0.5, strip_ansi_codes: bool = True) -> bool:
+        """Wait for specific text to appear in output.
+
+        Args:
+            session_id: Session ID
+            text: Text to wait for
+            timeout: Maximum seconds to wait
+            poll_interval: Seconds between polls
+            strip_ansi_codes: Whether to strip ANSI codes before checking
+
+        Returns:
+            True if text found, False if timeout
+
+        Raises:
+            TimeoutError: If timeout is reached
+        """
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            current_text = self.get_text(session_id, strip_ansi_codes=strip_ansi_codes)
+            if text in current_text:
+                return True
+            time.sleep(poll_interval)
+
+        raise TimeoutError(f"Text '{text}' not found within {timeout} seconds")
+
+    def wait_for_condition(self, session_id: str, condition: Callable[[str], bool],
+                          timeout: float = 30, poll_interval: float = 0.5) -> bool:
+        """Wait for a condition function to return True.
+
+        Args:
+            session_id: Session ID
+            condition: Function that takes current text and returns bool
+            timeout: Maximum seconds to wait
+            poll_interval: Seconds between polls
+
+        Returns:
+            True if condition met, False if timeout
+
+        Raises:
+            TimeoutError: If timeout is reached
+        """
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            current_text = self.get_text(session_id)
+            if condition(current_text):
+                return True
+            time.sleep(poll_interval)
+
+        raise TimeoutError(f"Condition not met within {timeout} seconds")
+
+    def wait_for_quiet(self, session_id: str, duration: float = 2.0,
+                      poll_interval: float = 0.5, timeout: float = 30) -> bool:
+        """Wait for output to stop changing.
+
+        Args:
+            session_id: Session ID
+            duration: Seconds of no change required
+            poll_interval: Seconds between polls
+            timeout: Maximum seconds to wait
+
+        Returns:
+            True if quiet period achieved
+
+        Raises:
+            TimeoutError: If timeout is reached
+        """
+        start_time = time.time()
+        last_text = None
+        quiet_start = None
+
+        while time.time() - start_time < timeout:
+            current_text = self.get_text(session_id)
+
+            if current_text == last_text:
+                if quiet_start is None:
+                    quiet_start = time.time()
+                elif time.time() - quiet_start >= duration:
+                    return True
+            else:
+                quiet_start = None
+                last_text = current_text
+
+            time.sleep(poll_interval)
+
+        raise TimeoutError(f"Output did not stabilize within {timeout} seconds")
+
+    def get_new_lines(self, session_id: str, strip_ansi_codes: bool = True) -> list[str]:
+        """Get new lines since last call to this method.
+
+        Args:
+            session_id: Session ID
+            strip_ansi_codes: Whether to strip ANSI codes
+
+        Returns:
+            List of new lines since last call
+        """
+        current_text = self.get_text(session_id, strip_ansi_codes=strip_ansi_codes)
+        current_lines = current_text.split('\n')
+
+        if session_id not in self._read_marks:
+            # First call - return all lines
+            self._read_marks[session_id] = len(current_lines)
+            return current_lines
+
+        # Return only new lines
+        last_count = self._read_marks[session_id]
+        new_lines = current_lines[last_count:]
+        self._read_marks[session_id] = len(current_lines)
+
+        return new_lines
+
+    def mark_read(self, session_id: str) -> None:
+        """Mark current output as read.
+
+        Subsequent calls to get_new_lines() will only return output after this mark.
+
+        Args:
+            session_id: Session ID
+        """
+        current_text = self.get_text(session_id)
+        current_lines = current_text.split('\n')
+        self._read_marks[session_id] = len(current_lines)
 
     async def interactive_session(self, session_id: str) -> None:
         """Run an interactive session via WebSocket.
