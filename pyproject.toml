@@ -1,5 +1,5 @@
 [project]
-name = "term-wrapper"
+name = "terminal-wrapper"
 version = "0.1.0"
 description = "PTY-based terminal emulator with web backend for running TUI applications via HTTP/WebSocket APIs"
 readme = "README.md"
