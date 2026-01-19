@@ -23,7 +23,7 @@ class TerminalClient:
         self.http_client = httpx.Client(base_url=base_url, timeout=10.0)
 
     def create_session(
-        self, command: list[str], rows: int = 24, cols: int = 80
+        self, command: list[str], rows: int = 24, cols: int = 80, env: Optional[dict] = None
     ) -> str:
         """Create a new terminal session.
 
@@ -31,13 +31,18 @@ class TerminalClient:
             command: Command to run
             rows: Terminal rows
             cols: Terminal columns
+            env: Optional environment variables
 
         Returns:
             Session ID
         """
+        payload = {"command": command, "rows": rows, "cols": cols}
+        if env is not None:
+            payload["env"] = env
+
         response = self.http_client.post(
             "/sessions",
-            json={"command": command, "rows": rows, "cols": cols},
+            json=payload,
         )
         response.raise_for_status()
         return response.json()["session_id"]

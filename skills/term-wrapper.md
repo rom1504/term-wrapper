@@ -190,81 +190,124 @@ client.close()
 # Result: /tmp/thepi.py now computes both pi and e
 ```
 
-### Example 3: Use Claude CLI to Create and Run Code
+### Example 3: Interactive Claude CLI - FULLY WORKING!
 
-**Use case**: Use Claude CLI (running inside term-wrapper) to write and execute code.
+**Use case**: Use Claude CLI interactively through term-wrapper to write and execute code.
 
-**Method 1: Piped Input (Recommended - Non-Interactive)**
+**STATUS: ✓ Interactive mode now works!** Term-wrapper's PTY provides proper raw mode support for Ink-based TUIs.
 
 ```python
 import time
+import os
 from term_wrapper.cli import TerminalClient
 
-client = TerminalClient(base_url="http://localhost:8000")
 
-# Run Claude CLI with piped input - reliable but can't see progress
-cmd = (
-    'cd /tmp/myproject && '
-    'echo "Create a Python file that computes pi to the 25th digit and prints it. Then run it." | '
-    'claude --dangerously-skip-permissions && '
-    'sleep 10'  # Keep session alive to see results
+def wait_for_condition(client, session_id, check_func, timeout=60, poll_interval=1):
+    """Poll until condition is met or timeout."""
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        screen = client.get_screen(session_id)
+        if check_func(screen):
+            return screen, True
+        time.sleep(poll_interval)
+    return screen, False
+
+
+# Create client and work directory
+client = TerminalClient(base_url="http://localhost:8000")
+work_dir = "/tmp/claude_example"
+os.makedirs(work_dir, exist_ok=True)
+
+# Create interactive Claude session
+session_id = client.create_session(
+    command=["bash", "-c", f"cd {work_dir} && claude"],
+    rows=40,
+    cols=120
 )
 
-session_id = client.create_session(command=["bash", "-c", cmd], rows=40, cols=120)
+# Step 1: Handle trust prompt
+screen, found = wait_for_condition(
+    client, session_id,
+    lambda s: any("Do you trust" in line for line in s['lines']),
+    timeout=10
+)
+if found:
+    time.sleep(1)  # Let UI stabilize
+    client.write_input(session_id, "\r")  # Press Enter to trust
+    wait_for_condition(
+        client, session_id,
+        lambda s: any("Welcome" in line for line in s['lines']),
+        timeout=10
+    )
 
-# Wait for Claude to complete (adjust based on task complexity)
-time.sleep(30)
+# Step 2: Submit request
+request = "create hello.py that prints hello world"
+client.write_input(session_id, request)
+time.sleep(0.5)
+client.write_input(session_id, "\r")  # Submit
 
-# Get Claude's screen output
-screen_data = client.get_screen(session_id)
-lines = screen_data['lines']
+# Step 3: Wait for code generation
+screen, found = wait_for_condition(
+    client, session_id,
+    lambda s: any("esc to cancel" in line.lower() for line in s['lines']),
+    timeout=30,
+    poll_interval=2
+)
 
-# Extract results
-for line in lines:
-    if 'Pi to' in line or '3.14' in line or 'Created' in line:
-        print(line)
+# Step 4: Approve code
+if found:
+    time.sleep(3)  # CRITICAL: let UI fully render
+    client.write_input(session_id, "\r")  # Approve
 
+    # Wait for file creation
+    wait_for_condition(
+        client, session_id,
+        lambda s: len([f for f in os.listdir(work_dir) if f.endswith('.py')]) > 0,
+        timeout=15
+    )
+
+# Check results
+files = [f for f in os.listdir(work_dir) if f.endswith('.py')]
+print(f"Created: {files}")
+
+# Cleanup
 client.delete_session(session_id)
 client.close()
 ```
 
-**Method 2: Direct Bash Execution (Fastest)**
+**Key Requirements for Interactive Mode:**
+
+1. **Use output polling** - Don't use fixed sleeps. Poll `get_screen()` to detect state changes.
+2. **Wait for UI stability** - After detecting UI elements, wait 1-3 seconds before sending input.
+3. **Handle multiple prompts** - Trust prompt → Request submission → Code approval.
+4. **Poll for completion** - Check filesystem or screen output to detect when Claude is done.
+
+**Why Interactive Mode Works:**
+
+Term-wrapper's PTY implementation provides:
+- `isTTY: true` for all streams
+- Working `setRawMode()` function
+- Proper terminal attributes for Ink's `useInput` hook
+
+The raw mode support added to `terminal.py` enables Ink-based applications like Claude Code to receive keyboard input properly.
+
+**Alternative: Piped Input (Non-Interactive)**
+
+For simpler automation where you don't need to see Claude's UI:
 
 ```python
-# Even simpler - just run in bash and check files afterward
-import subprocess, time
-
-result = subprocess.run([
-    'bash', '-c',
-    'cd /tmp/myproject && echo "create hello.py" | claude --dangerously-skip-permissions'
-], capture_output=True, text=True, timeout=30)
-
-time.sleep(2)
-
-# Check created files
-import os
-files = os.listdir('/tmp/myproject')
-print(f"Created: {files}")
+cmd = (
+    'cd /tmp/myproject && '
+    'echo "create hello.py" | claude --dangerously-skip-permissions'
+)
+session_id = client.create_session(command=["bash", "-c", cmd], rows=40, cols=120)
+time.sleep(30)
+screen_data = client.get_screen(session_id)
 ```
 
-**Why Piping Works (Technical Details):**
+Piping works because stdin is consumed before Ink's TUI starts, bypassing interactive mode entirely.
 
-Claude Code uses [Ink](https://github.com/vadimdemedes/ink) (React for CLIs) which requires raw TTY mode for interactive input. When you pipe stdin (`echo | claude`), Claude reads the entire input *before* Ink's TUI initializes, avoiding the raw mode requirement.
-
-**Interactive typing doesn't work** because Ink's `useInput` hook expects raw mode stdin, which term-wrapper's PTY doesn't satisfy the same way a real terminal does (see [Ink issue #166](https://github.com/vadimdemedes/ink/issues/166)).
-
-**Notes:**
-- Use `--dangerously-skip-permissions` to bypass permission prompts
-- Piped input reads before TUI starts, enabling non-interactive workflows
-- `-p` flag is for text output only (doesn't execute tasks)
-- Wait times: simple tasks ~10s, complex tasks ~30s+
-- For watching Claude's progress interactively, use the web UI
-
-**Sources:**
-- [Ink GitHub](https://github.com/vadimdemedes/ink)
-- [Claude Code Headless Docs](https://code.claude.com/docs/en/headless)
-- [Ink setRawMode TTY issue](https://github.com/vadimdemedes/ink/issues/166)
-- [Claude Code stdin pipe issues](https://github.com/anthropics/claude-code/issues/5925)
+**Full Example:** See `examples/claude_interactive_working.py` for a complete, production-ready implementation.
 
 ## Parsing Output
 

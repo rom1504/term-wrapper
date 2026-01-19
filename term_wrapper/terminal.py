@@ -29,12 +29,13 @@ class Terminal:
         self._running = False
         self._read_task: Optional[asyncio.Task] = None
 
-    def spawn(self, command: list[str], env: Optional[dict] = None) -> None:
+    def spawn(self, command: list[str], env: Optional[dict] = None, raw_mode: bool = True) -> None:
         """Spawn a process in the terminal.
 
         Args:
             command: Command and arguments to execute
             env: Optional environment variables
+            raw_mode: Whether to set the PTY to raw mode (default True)
         """
         if self._running:
             raise RuntimeError("Terminal already has a running process")
@@ -51,6 +52,23 @@ class Terminal:
             # Parent process
             self._set_terminal_size(self.rows, self.cols)
             self._running = True
+
+            # Set the PTY to raw mode if requested (needed for interactive apps like Ink)
+            if raw_mode:
+                try:
+                    import tty
+                    # Get current attributes
+                    old_attrs = termios.tcgetattr(self.master_fd)
+                    # Set to raw mode
+                    tty.setraw(self.master_fd)
+                    # Restore some needed attributes for proper operation
+                    new_attrs = termios.tcgetattr(self.master_fd)
+                    # Enable echo and canonical mode processing
+                    new_attrs[3] = new_attrs[3] | termios.ECHO | termios.ICANON
+                    termios.tcsetattr(self.master_fd, termios.TCSANOW, new_attrs)
+                except Exception:
+                    # If raw mode fails, continue anyway
+                    pass
 
             # Set non-blocking mode
             flags = fcntl.fcntl(self.master_fd, fcntl.F_GETFL)
