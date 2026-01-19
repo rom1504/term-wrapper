@@ -77,7 +77,9 @@ class TerminalApp {
 
         // Open terminal
         this.term.open(document.getElementById('terminal'));
-        this.fitAddon.fit();
+
+        // Fit with reasonable dimensions (max 120 cols for TUI app compatibility)
+        this.fitTerminal();
 
         // Show connecting message
         this.term.writeln('\x1b[1;32mConnecting to terminal...\x1b[0m');
@@ -106,6 +108,23 @@ class TerminalApp {
         }
     }
 
+    fitTerminal() {
+        // Use FitAddon to calculate dimensions
+        this.fitAddon.fit();
+
+        // Cap columns at 120 for better TUI app compatibility
+        // (Claude Code and many TUI apps expect standard terminal widths)
+        const MAX_COLS = 120;
+        if (this.term.cols > MAX_COLS) {
+            // Calculate proportional dimensions
+            const charWidth = Math.ceil(this.term.element.offsetWidth / this.term.cols);
+            const targetWidth = charWidth * MAX_COLS;
+
+            // Resize terminal with capped columns
+            this.term.resize(MAX_COLS, this.term.rows);
+        }
+    }
+
     setupEventListeners() {
         // Disconnect button
         document.getElementById('disconnectBtn').addEventListener('click', () => {
@@ -115,7 +134,7 @@ class TerminalApp {
         // Window resize
         window.addEventListener('resize', () => {
             if (this.fitAddon) {
-                this.fitAddon.fit();
+                this.fitTerminal();
             }
         });
 

@@ -19,6 +19,12 @@ Minor release with automatic script detection and improved usability.
   - Zero user changes needed - `term-wrapper create claude` just works
   - Transparent: doesn't affect normal commands or binaries
 
+### Fixed
+- Web frontend terminal width capped at 120 columns
+  - Prevents super-wide terminals on large screens
+  - Fixes TUI apps like Claude Code appearing misaligned in browser
+  - Uses FitAddon for height, manual cap for width
+
 ### Example
 ```bash
 # Before: Required manual bash wrapping
