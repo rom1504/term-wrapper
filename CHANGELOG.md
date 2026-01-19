@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-01-19
+
+Critical patch fixing frontend files not being included in PyPI package.
+
+### Fixed
+- Frontend files (index.html, app.js, style.css) now included in wheel distribution
+- Moved frontend files into term_wrapper/frontend/ directory
+- Updated API to look for frontend in package directory
+- Resolves "Frontend not found. API is running at /health" error
+
 ## [0.3.2] - 2026-01-19
 
 Feature release adding web browser integration.
