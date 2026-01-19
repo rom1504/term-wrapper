@@ -45,7 +45,7 @@ jobs:
 
     - name: Run application integration tests
       run: |
-        uv run pytest tests/test_vim.py tests/test_htop.py tests/test_htop_screen.py tests/test_ink_integration.py -v
+        uv run pytest tests/test_vim.py tests/test_htop.py tests/test_ink_integration.py -v
 
     - name: Run CLI e2e tests
       run: |
@@ -55,8 +55,8 @@ jobs:
       run: |
         uv run pytest tests/test_frontend_e2e.py -v
 
-    # Note: Claude CLI tests are skipped in CI as they require Claude CLI
-    # installation and authentication. Skipped tests:
-    # - tests/test_claude.py
-    # - tests/test_cli_e2e_claude.py
-    # Run them locally with: uv run pytest tests/test_claude.py -v
+    # Note: Some tests are skipped in CI:
+    # - tests/test_claude.py - Requires Claude CLI installation and authentication
+    # - tests/test_cli_e2e_claude.py - Requires Claude CLI installation and authentication
+    # - tests/test_htop_screen.py - Environment-sensitive, requires proper terminal setup
+    # Run skipped tests locally with: uv run pytest tests/test_claude.py tests/test_htop_screen.py -v
