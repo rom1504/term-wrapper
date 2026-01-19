@@ -35,6 +35,7 @@ dev = [
 
 [project.scripts]
 term-wrapper = "term_wrapper.cli:sync_main"
+term-wrapper-server = "term_wrapper.server:main"
 
 [project.urls]
 Homepage = "https://github.com/rom1504/term-wrapper"

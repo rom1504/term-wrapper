@@ -64,16 +64,11 @@ class ServerManager:
             Server URL
         """
         # Start server with port 0 (auto-select)
-        # Use the main module entry point
         log_file = open(self.log_file, "w")
 
-        # Find the main.py in the package
-        import term_wrapper
-        package_dir = Path(term_wrapper.__file__).parent.parent
-        main_py = package_dir / "main.py"
-
+        # Use python -m to run the server module
         process = subprocess.Popen(
-            [sys.executable, str(main_py), "--port", "0"],
+            [sys.executable, "-m", "term_wrapper.server", "--port", "0"],
             stdout=log_file,
             stderr=subprocess.STDOUT,
             start_new_session=True,  # Detach from parent
