@@ -202,6 +202,45 @@ async def get_output(session_id: str, clear: bool = True) -> JSONResponse:
     return JSONResponse({"output": output.decode("utf-8", errors="replace")})
 
 
+@app.get("/sessions/{session_id}/screen")
+async def get_screen(session_id: str) -> JSONResponse:
+    """Get rendered terminal screen as 2D array.
+
+    This endpoint provides a parsed view of the terminal screen,
+    processing ANSI escape sequences and cursor positioning to
+    produce a 2D grid of characters. This is useful for parsing
+    complex TUI applications like htop, vim, etc.
+
+    Args:
+        session_id: Session identifier
+
+    Returns:
+        JSON response with:
+            - lines: List of strings, one per screen row
+            - rows: Number of rows
+            - cols: Number of columns
+            - cursor: Current cursor position {row, col}
+
+    Raises:
+        HTTPException: If session not found
+    """
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    lines = session.screen_buffer.get_screen_lines()
+
+    return JSONResponse({
+        "lines": lines,
+        "rows": session.screen_buffer.rows,
+        "cols": session.screen_buffer.cols,
+        "cursor": {
+            "row": session.screen_buffer.cursor_row,
+            "col": session.screen_buffer.cursor_col
+        }
+    })
+
+
 @app.websocket("/sessions/{session_id}/ws")
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
     """WebSocket endpoint for real-time terminal interaction.

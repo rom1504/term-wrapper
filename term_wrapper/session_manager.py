@@ -4,30 +4,41 @@ import asyncio
 import uuid
 from typing import Dict, Optional
 from .terminal import Terminal
+from .screen_buffer import ScreenBuffer
 
 
 class TerminalSession:
     """Represents a terminal session."""
 
-    def __init__(self, session_id: str, terminal: Terminal):
+    def __init__(self, session_id: str, terminal: Terminal, rows: int, cols: int):
         """Initialize terminal session.
 
         Args:
             session_id: Unique session identifier
             terminal: Terminal instance
+            rows: Terminal rows
+            cols: Terminal columns
         """
         self.session_id = session_id
         self.terminal = terminal
         self.output_buffer: list[bytes] = []
+        self.screen_buffer = ScreenBuffer(rows, cols)
         self.lock = asyncio.Lock()
 
     def add_output(self, data: bytes) -> None:
-        """Add output data to buffer.
+        """Add output data to buffer and update screen buffer.
 
         Args:
             data: Output bytes from terminal
         """
         self.output_buffer.append(data)
+        # Update screen buffer with decoded output
+        try:
+            text = data.decode('utf-8', errors='replace')
+            self.screen_buffer.process_output(text)
+        except Exception:
+            # If decoding fails, skip screen buffer update
+            pass
 
     async def get_output(self, clear: bool = True) -> bytes:
         """Get accumulated output.
@@ -73,7 +84,7 @@ class SessionManager:
         session_id = str(uuid.uuid4())
         terminal = Terminal(rows, cols)
 
-        session = TerminalSession(session_id, terminal)
+        session = TerminalSession(session_id, terminal, rows, cols)
         terminal.output_callback = session.add_output
 
         terminal.spawn(command, env)
