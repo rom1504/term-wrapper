@@ -283,15 +283,6 @@ sleep 3
 curl -s http://localhost:8000/health  # Verify it started
 ```
 
-## Alternative: Web Frontend
-
-For complex TUI applications, suggest the web frontend:
-```
-http://localhost:8000/static/index.html?cmd=htop&args=
-```
-
-The web frontend uses xterm.js for proper terminal rendering with mouse support.
-
 ## Common Patterns
 
 ### Pattern 1: Run Command and Parse Output
@@ -328,12 +319,12 @@ For vim/nano:
 
 ## Summary
 
-This skill enables full programmatic control of any terminal application through HTTP APIs. Key points:
+This skill enables full programmatic control of any terminal application through CLI commands or HTTP APIs. Key points:
 
-- Use simple commands (ps, ls, grep) for reliable parsing
-- Strip ANSI codes from output before parsing
-- Keep sessions alive with sleep for quick commands
-- Always cleanup sessions when done
-- For complex TUI apps, consider suggesting the web frontend
+- **Prefer CLI subcommands** for simplicity and shell scripting
+- Use `get-screen` for complex TUI apps to get clean parsed text
+- Use `wait-text` and `wait-quiet` instead of fixed sleeps
+- Always cleanup sessions with `delete` when done
+- CLI handles escape sequences: `\n`, `\r`, `\t`, `\x1b`
 
 The term-wrapper API bridges the gap between modern HTTP/REST interfaces and traditional terminal applications, making them accessible to AI assistants and automation tools.
