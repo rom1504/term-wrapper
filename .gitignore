@@ -24,3 +24,16 @@ package-lock.json
 
 # OS
 .DS_Store
+
+# Sensitive files
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# Logs
+*.log
