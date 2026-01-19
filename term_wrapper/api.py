@@ -2,6 +2,7 @@
 
 import asyncio
 import os
+import re
 from pathlib import Path
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -242,6 +243,35 @@ async def get_screen(session_id: str) -> JSONResponse:
     })
 
 
+def filter_unsupported_ansi(data: bytes) -> bytes:
+    """Filter out ANSI sequences not fully supported by xterm.js.
+
+    This prevents rendering issues with applications like Claude Code that use
+    newer terminal features or send malformed sequences.
+
+    Args:
+        data: Raw terminal output with ANSI escape sequences
+
+    Returns:
+        Filtered output with unsupported/malformed sequences removed
+    """
+    # Convert to string for regex processing
+    text = data.decode('utf-8', errors='replace')
+
+    # Remove synchronized output mode sequences (DEC 2026)
+    # ESC[?2026h - Enable synchronized output
+    # ESC[?2026l - Disable synchronized output
+    text = re.sub(r'\x1b\[\?2026[hl]', '', text)
+
+    # Remove malformed cursor positioning sequences
+    # [<u appears frequently and breaks cursor positioning
+    # This is likely a corrupted ESC[...H or ESC[s/u sequence
+    text = re.sub(r'\[<u', '', text)
+
+    # Convert back to bytes
+    return text.encode('utf-8', errors='replace')
+
+
 @app.websocket("/sessions/{session_id}/ws")
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
     """WebSocket endpoint for real-time terminal interaction.
@@ -264,7 +294,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 await asyncio.sleep(0.05)  # 50ms polling interval
                 output = await session.get_output(clear=True)
                 if output:
-                    await websocket.send_bytes(output)
+                    # Filter unsupported ANSI sequences before sending
+                    filtered_output = filter_unsupported_ansi(output)
+                    await websocket.send_bytes(filtered_output)
 
                 if not session.terminal.is_alive():
                     await websocket.send_text("__TERMINAL_CLOSED__")

@@ -1,0 +1,4 @@
+  0: lines
+  1: rows
+  2: cols
+  3: cursor
