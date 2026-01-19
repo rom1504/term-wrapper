@@ -70,7 +70,7 @@ async def test_python_tui_app(server):
     """Test running and interacting with the Python TUI counter app."""
     tui_app_path = os.path.join(
         os.path.dirname(os.path.dirname(__file__)),
-        "test_app",
+        "examples",
         "simple_tui.py",
     )
 
@@ -112,7 +112,7 @@ async def test_python_tui_websocket_control(server):
     """Test controlling Python TUI app via WebSocket."""
     tui_app_path = os.path.join(
         os.path.dirname(os.path.dirname(__file__)),
-        "test_app",
+        "examples",
         "simple_tui.py",
     )
 
@@ -174,7 +174,7 @@ async def test_ink_app_websocket_control(server):
     """Test controlling Ink app via WebSocket."""
     ink_app_path = os.path.join(
         os.path.dirname(os.path.dirname(__file__)),
-        "test_app",
+        "examples",
         "app.js",
     )
 
@@ -256,7 +256,7 @@ async def test_ink_app_via_http_endpoints(server):
     """Test controlling Ink app via HTTP POST endpoints."""
     ink_app_path = os.path.join(
         os.path.dirname(os.path.dirname(__file__)),
-        "test_app",
+        "examples",
         "app.js",
     )
 

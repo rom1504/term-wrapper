@@ -82,7 +82,7 @@ Server will start on `http://localhost:8000`
 #### Option A: Using the CLI Client
 
 ```bash
-uv run python -m term_wrapper.cli python3 test_app/simple_tui.py
+uv run python -m term_wrapper.cli python3 examples/simple_tui.py
 ```
 
 #### Option B: Using HTTP API
@@ -91,7 +91,7 @@ uv run python -m term_wrapper.cli python3 test_app/simple_tui.py
 # Create a session
 curl -X POST http://localhost:8000/sessions \
   -H "Content-Type: application/json" \
-  -d '{"command": ["python3", "test_app/simple_tui.py"], "rows": 24, "cols": 80}'
+  -d '{"command": ["python3", "examples/simple_tui.py"], "rows": 24, "cols": 80}'
 
 # Returns: {"session_id": "xxx-xxx-xxx"}
 
@@ -167,7 +167,7 @@ See [reports/README.md](reports/README.md) for how to test and document new appl
 
 ## Example TUI Apps
 
-### Python TUI App (`test_app/simple_tui.py`)
+### Python TUI App (`examples/simple_tui.py`)
 
 A simple counter application demonstrating:
 - Terminal control codes
@@ -194,8 +194,13 @@ term_wrapper/
 │   ├── test_api.py        # API tests
 │   ├── test_e2e.py       # End-to-end tests
 │   └── test_ink_integration.py # TUI app tests
-├── test_app/             # Example TUI applications
+├── examples/             # Example applications
+│   ├── simple_example.py # Simple HTTP API usage
+│   ├── vim_example.py    # Vim automation example
 │   └── simple_tui.py     # Python TUI demo
+├── frontend/             # Web frontend with xterm.js
+├── docs/                 # Documentation
+├── scripts/              # Utility scripts
 ├── main.py              # Server entry point
 └── pyproject.toml       # Project configuration
 ```

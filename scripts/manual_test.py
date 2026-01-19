@@ -98,7 +98,7 @@ async def test_system():
         print("8. Creating session with Python TUI app...")
         response = await client.post(
             "/sessions",
-            json={"command": ["python3", "test_app/simple_tui.py"]},
+            json={"command": ["python3", "examples/simple_tui.py"]},
         )
         session_id = response.json()["session_id"]
         print(f"   Session ID: {session_id}")
