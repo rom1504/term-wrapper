@@ -37,3 +37,4 @@ credentials/
 
 # Logs
 *.log
+debug_*.png
