@@ -62,15 +62,39 @@ When using the REST API without a terminal emulator frontend:
 └─────────────────┘
 ```
 
-## Quick Start
+## Installation
 
-### 1. Install Dependencies
+### From PyPI (Recommended for Users)
 
 ```bash
+pip install term-wrapper
+```
+
+This installs the package and makes the `term-wrapper` CLI command available:
+
+```bash
+term-wrapper --help
+term-wrapper create htop
+```
+
+### From Source (For Development)
+
+```bash
+git clone https://github.com/rom1504/term-wrapper.git
+cd term-wrapper
 uv sync
 ```
 
-### 2. Start the Server
+When developing with uv, prefix commands with `uv run`:
+
+```bash
+uv run term-wrapper --help
+uv run term-wrapper create htop
+```
+
+## Quick Start
+
+### 1. Start the Server
 
 ```bash
 uv run python main.py
@@ -152,7 +176,15 @@ curl -X DELETE http://localhost:8000/sessions/{session_id}
 
 ## CLI Subcommands
 
-The CLI provides scriptable terminal control without writing Python code. All commands output JSON for easy parsing.
+The `term-wrapper` CLI command is installed automatically when you install the package via pip. It provides scriptable terminal control without writing Python code. All commands output JSON for easy parsing.
+
+**Installation**: The CLI entry point is defined in `pyproject.toml` as:
+```toml
+[project.scripts]
+term-wrapper = "term_wrapper.cli:sync_main"
+```
+
+After `pip install term-wrapper`, the `term-wrapper` command will be available in your PATH. During development with uv, use `uv run term-wrapper`.
 
 ### Available Subcommands
 
