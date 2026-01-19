@@ -71,12 +71,14 @@ The included web frontend (`frontend/`) serves as a **universal web mirror** for
 pip install term-wrapper
 ```
 
-This installs the package and makes the `term-wrapper` CLI command available:
+This installs the `term-wrapper` command:
 
 ```bash
 term-wrapper --help
 term-wrapper create htop
 ```
+
+**The server starts automatically!** When you run a `term-wrapper` command, it automatically starts the backend server if it's not already running. The server picks an available port and saves it to `~/.term-wrapper/port` for future commands.
 
 ### From Source (For Development)
 
@@ -95,15 +97,9 @@ uv run term-wrapper create htop
 
 ## Quick Start
 
-### 1. Start the Server
+### Run a TUI App
 
-```bash
-uv run python main.py
-```
-
-Server will start on `http://localhost:8000`
-
-### 3. Run a TUI App
+The server starts automatically when you use the CLI!
 
 #### Option A: Using CLI Subcommands (Recommended)
 
@@ -343,13 +339,26 @@ Access any terminal application through your browser with the included web front
 
 ### Quick Start
 
-Start the server and open your browser:
+The server starts automatically when you use the CLI. To access the web frontend:
 
 ```bash
-# Start server
+# Option 1: Use any term-wrapper command (auto-starts server)
+term-wrapper create bash
+
+# Find the port (saved in ~/.term-wrapper/port)
+PORT=$(cat ~/.term-wrapper/port)
+
+# Open in browser
+http://localhost:$PORT/
+```
+
+Or start the server manually for development:
+
+```bash
+# Start server on fixed port
 uv run python main.py
 
-# Open in browser (automatically available)
+# Open in browser
 http://localhost:8000/
 ```
 

@@ -32,6 +32,8 @@ Run any terminal application through the term-wrapper HTTP API or CLI commands. 
 
 **The easiest way to use term-wrapper is via CLI subcommands.** This requires no Python code and works directly from bash/shell scripts.
 
+**Auto-Start**: The backend server starts automatically when you run any `term-wrapper` command. No need to manually start a server! The server picks an available port and saves it to `~/.term-wrapper/port`.
+
 **Note**: In development environments using uv, prefix all commands with `uv run`, e.g., `uv run term-wrapper --help`. After pip install, use `term-wrapper` directly.
 
 ### Quick Example: Automate Claude Code

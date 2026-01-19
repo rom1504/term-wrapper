@@ -10,6 +10,7 @@ import httpx
 import websockets
 import json
 from .utils import strip_ansi, extract_visible_text
+from .server_manager import ServerManager
 
 
 class TerminalClient:
@@ -366,8 +367,8 @@ Examples:
     )
     parser.add_argument(
         "--url",
-        default="http://localhost:8000",
-        help="Backend server URL (default: http://localhost:8000)",
+        default=None,
+        help="Backend server URL (default: auto-discover or start server)",
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -434,7 +435,21 @@ Examples:
         parser.print_help()
         sys.exit(1)
 
-    client = TerminalClient(base_url=args.url)
+    # Auto-discover or start server if URL not provided
+    if args.url is None:
+        server_manager = ServerManager()
+        try:
+            url = server_manager.get_server_url()
+        except Exception as e:
+            print(json.dumps({
+                "error": "Failed to start server",
+                "details": str(e)
+            }), file=sys.stderr)
+            sys.exit(1)
+    else:
+        url = args.url
+
+    client = TerminalClient(base_url=url)
 
     try:
         if args.command == "create":
@@ -510,6 +525,12 @@ Examples:
 
     except TimeoutError as e:
         print(json.dumps({"error": str(e)}), file=sys.stderr)
+        sys.exit(1)
+    except httpx.ConnectError as e:
+        print(json.dumps({
+            "error": f"Cannot connect to term-wrapper server at {client.base_url}",
+            "details": str(e)
+        }), file=sys.stderr)
         sys.exit(1)
     except Exception as e:
         print(json.dumps({"error": str(e)}), file=sys.stderr)

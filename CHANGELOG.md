@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Auto-start server functionality in CLI client
+  - Server automatically starts when running any `term-wrapper` command
+  - No manual server startup required
+  - Server picks an available port (port 0) automatically
+  - Port saved to `~/.term-wrapper/port` for subsequent commands
+  - Improved UX - single command to get started
+
+### Changed
+- CLI now auto-discovers or starts server if `--url` not specified
+- README and skill documentation updated to reflect auto-start behavior
+- Web frontend documentation updated with auto-start instructions
+
 ## [0.2.1] - 2026-01-19
 
 Maintenance release with CI improvements and documentation updates.
