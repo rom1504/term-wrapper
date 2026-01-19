@@ -182,9 +182,27 @@ await page.wait_for_selector('#terminal', timeout=10000)
 await asyncio.sleep(1)  # Additional time for rendering
 ```
 
-## Example: Debugging Claude Code Vertical Layout
+## Examples
 
-See [`docs/examples/debug_claude_vertical.py`](examples/debug_claude_vertical.py) for a complete example that:
+### Comprehensive Claude Rendering Test
+
+See [`docs/examples/test_claude_rendering.py`](examples/test_claude_rendering.py) for a comprehensive test that verifies perfect Claude Code rendering:
+- Initial state verification
+- Query submission and response handling
+- Scrolling behavior testing
+- File creation with approval flow
+- Duplication detection
+- Buffer analysis
+
+This test takes 8 screenshots and validates that:
+- No content is duplicated vertically
+- Layout remains consistent across interactions
+- Scrolling works correctly
+- Approval UI appears and functions properly
+
+### Interactive Debugging
+
+See [`docs/examples/debug_claude_vertical.py`](examples/debug_claude_vertical.py) for a simpler interactive debugging example that:
 
 1. Creates a Claude Code session
 2. Takes screenshot of initial state
