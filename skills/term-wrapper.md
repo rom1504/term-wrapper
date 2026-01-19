@@ -12,6 +12,27 @@ Enables Claude to:
 - Retrieve and parse terminal output
 - Interact with TUI applications like htop, vim, or any command-line tool
 
+## ⚠️ IMPORTANT: Approach Priority
+
+**ALWAYS use this priority order:**
+
+1. **CLI Subcommands (FIRST CHOICE)** - Use `uv run python -m term_wrapper.cli` commands
+   - Simplest approach, works directly from bash
+   - All examples below show CLI commands
+   - **Use this unless it truly doesn't work**
+
+2. **Python Client Library (SECOND CHOICE)** - Only if CLI fails or is insufficient
+   - Use `from term_wrapper.cli import TerminalClient`
+   - See "Alternative: Python Client Library" section below
+   - Only use if CLI commands don't meet your needs
+
+3. **Direct HTTP API (LAST RESORT)** - Only if both CLI and Python fail
+   - Use curl with REST endpoints
+   - See "Core API Operations (Low-Level HTTP)" section below
+   - Most complex approach, avoid unless necessary
+
+**Default to CLI commands. Only escalate to Python or HTTP if you encounter errors.**
+
 ## Recommended Approach: CLI Subcommands
 
 **The easiest way to use term-wrapper is via CLI subcommands.** This requires no Python code and works directly from bash/shell scripts.
