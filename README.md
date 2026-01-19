@@ -1,4 +1,4 @@
-# Terminal Wrapper
+# Term Wrapper
 
 [![CI](https://github.com/rom1504/term-wrapper/workflows/CI/badge.svg)](https://github.com/rom1504/term-wrapper/actions/workflows/ci.yml)
 
