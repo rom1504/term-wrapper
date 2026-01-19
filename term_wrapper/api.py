@@ -288,6 +288,9 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
     # Run both tasks concurrently
     try:
         await asyncio.gather(send_output(), receive_input())
+    except asyncio.CancelledError:
+        # Handle cancellation (e.g., client disconnect) gracefully
+        pass
     except Exception:
         pass
     finally:
