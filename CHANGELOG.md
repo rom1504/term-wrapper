@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-01-19
+
+Critical patch fixing double scrollbar and thinking indicator duplication.
+
+### Fixed
+- **Double scrollbar issue on mobile**
+  - html and body now have `position: fixed` and `overflow: hidden`
+  - Only terminal scrolls, not page body
+  - Fixes user-reported "both the main browser scrolling bar and the one for the term"
+  - Prevents touch events from going to wrong scroll target
+
+- **Thinking indicator duplication during Claude Code generation**
+  - Reduced scrollback buffer from 10000 to 1000 lines
+  - Prevents old status lines from lingering in buffer
+  - Fixes "Grooving..." appearing twice simultaneously
+  - Frame-by-frame analysis confirmed the duplication (see test_screencast/)
+
+### Changed
+- Layout now uses `height: 100%` instead of `100vh` to avoid mobile viewport issues
+- `#app` container now has `overflow: hidden` for better containment
+
+### Context
+User on Xiaomi 13 Android reported:
+1. Two scrollbars visible (page + terminal) causing scroll conflicts
+2. Thinking indicators duplicated during Claude generation
+
+Root cause: Page body was scrollable, causing:
+- Touch events intercepted by wrong element
+- Terminal viewport behaving unexpectedly
+- Claude Code status lines not properly overwritten in scrollback
+
+See `test_screencast/DUPLICATION_FOUND.md` for detailed frame analysis
+and `test_screencast/FIX_PLAN.md` for fix strategy.
+
 ## [0.6.1] - 2026-01-19
 
 Critical patch fixing mobile touch scrolling direction.
