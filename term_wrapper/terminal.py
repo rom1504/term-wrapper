@@ -53,19 +53,12 @@ class Terminal:
             self._set_terminal_size(self.rows, self.cols)
             self._running = True
 
-            # Set the PTY to raw mode if requested (needed for interactive apps like Ink)
+            # Set the PTY to raw mode if requested (needed for TUI apps)
             if raw_mode:
                 try:
                     import tty
-                    # Get current attributes
-                    old_attrs = termios.tcgetattr(self.master_fd)
-                    # Set to raw mode
+                    # Set to raw mode for proper TUI app support
                     tty.setraw(self.master_fd)
-                    # Restore some needed attributes for proper operation
-                    new_attrs = termios.tcgetattr(self.master_fd)
-                    # Enable echo and canonical mode processing
-                    new_attrs[3] = new_attrs[3] | termios.ECHO | termios.ICANON
-                    termios.tcsetattr(self.master_fd, termios.TCSANOW, new_attrs)
                 except Exception:
                     # If raw mode fails, continue anyway
                     pass
