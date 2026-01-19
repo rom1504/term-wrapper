@@ -304,7 +304,7 @@ await page.wait_for_function("window.app && window.app.term", timeout=10000)
 
 ## Running in CI
 
-The Playwright tests run automatically in CI. Screenshots are uploaded as artifacts:
+The Playwright tests run automatically in CI. **Screenshots are uploaded as GitHub artifacts** so you can visually inspect the rendering:
 
 ```yaml
 - name: Run Playwright web tests
@@ -312,13 +312,29 @@ The Playwright tests run automatically in CI. Screenshots are uploaded as artifa
     uv run pytest tests/test_web_playwright.py -v
 
 - name: Upload Playwright screenshots
-  if: always()
+  if: always()  # Upload even if tests fail
   uses: actions/upload-artifact@v4
   with:
     name: playwright-screenshots
     path: test_screenshots/
     if-no-files-found: ignore
 ```
+
+**Viewing CI Screenshots:**
+
+1. Go to the GitHub Actions run page
+2. Scroll to the bottom to find "Artifacts"
+3. Download `playwright-screenshots.zip`
+4. Unzip to see screenshots like `web_terminal_htop.png`
+
+This is super useful for:
+- Debugging CI-specific rendering issues
+- Verifying layout changes across environments
+- Visual regression testing
+
+**Example: htop in CI**
+
+The htop test runs in CI and generates a screenshot showing htop rendering in the web terminal. You can download this from any CI run to verify TUI rendering works correctly.
 
 Tests that require Claude CLI are automatically skipped:
 
