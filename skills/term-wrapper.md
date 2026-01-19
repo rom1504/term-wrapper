@@ -148,37 +148,41 @@ curl -X DELETE http://localhost:8000/sessions/{session_id}
 ### Example 1: Get Top 5 Memory Processes with htop
 
 **Problem**: htop uses complex ANSI escape sequences and cursor positioning.
-**Solution**: Use the `/screen` endpoint which provides parsed 2D screen buffer.
+**Solution**: Use the CLI with `get-screen` to get parsed 2D screen buffer.
 
-```python
-import time
-from term_wrapper.cli import TerminalClient
-
-# Create client
-client = TerminalClient(base_url="http://localhost:8000")
+```bash
+#!/bin/bash
+# Get top 5 memory processes from htop using CLI
 
 # Create htop session sorted by memory
-session_id = client.create_session(
-    command=["htop", "-C", "--sort-key=PERCENT_MEM"],
-    rows=40,
-    cols=150
-)
+SESSION=$(uv run python -m term_wrapper.cli create --rows 40 --cols 150 htop -C --sort-key=PERCENT_MEM | \
+          python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
 
 # Wait for htop to render
-time.sleep(2.5)
+sleep 2.5
 
-# Get parsed screen buffer (NOT raw output)
-screen_data = client.get_screen(session_id)
-lines = screen_data['lines']
+# Get parsed screen buffer and extract process info
+SCREEN=$(uv run python -m term_wrapper.cli get-screen $SESSION)
 
-# Find header line
+# Parse with Python to extract top 5
+echo "$SCREEN" | python3 << 'EOF'
+import sys
+import json
+
+data = json.load(sys.stdin)
+lines = data['lines']
+
+# Find header
 header_idx = None
 for i, line in enumerate(lines):
     if "PID" in line and "MEM%" in line:
         header_idx = i
         break
 
-# Parse process lines
+if header_idx is None:
+    sys.exit(1)
+
+# Parse processes
 processes = []
 for line in lines[header_idx + 1:]:
     if not line.strip():
@@ -190,7 +194,6 @@ for line in lines[header_idx + 1:]:
             user = parts[1]
             mem = float(parts[9].rstrip('%'))
             cmd = ' '.join(parts[10:]) if len(parts) > 10 else ''
-
             if mem > 0:
                 processes.append({'pid': pid, 'user': user, 'mem': mem, 'cmd': cmd})
         except (ValueError, IndexError):
@@ -199,78 +202,67 @@ for line in lines[header_idx + 1:]:
 # Get top 5
 top5 = sorted(processes, key=lambda x: x['mem'], reverse=True)[:5]
 
-# Display results
+# Display
 for i, p in enumerate(top5, 1):
     print(f"{i}. PID {p['pid']} | USER {p['user']} | MEM {p['mem']:.1f}% | {p['cmd'][:40]}")
+EOF
 
 # Cleanup
-client.delete_session(session_id)
-client.close()
+uv run python -m term_wrapper.cli delete $SESSION
 ```
 
 ### Example 2: Create and Edit File with vim
 
 **Use case**: Create a Python file with vim, then edit it to add more code.
 
-```python
-import time
-from term_wrapper.cli import TerminalClient
-
-client = TerminalClient(base_url="http://localhost:8000")
+```bash
+#!/bin/bash
+# Create and edit a Python file with vim using CLI
 
 # Step 1: Create /tmp/thepi.py with vim
-session_id = client.create_session(command=["vim", "/tmp/thepi.py"], rows=24, cols=80)
-time.sleep(1)
+SESSION=$(uv run python -m term_wrapper.cli create vim /tmp/thepi.py | \
+          python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
+sleep 1
 
 # Enter insert mode and write code
-client.write_input(session_id, "i")
-time.sleep(0.3)
+uv run python -m term_wrapper.cli send $SESSION "i"
+sleep 0.3
 
-code = """import math
+# Type the code (note: \n for newlines)
+uv run python -m term_wrapper.cli send $SESSION "import math\n\n# Compute pi\npi = math.pi\nprint(f\"Pi = {pi}\")\n"
+sleep 0.5
 
-# Compute pi
-pi = math.pi
-print(f"Pi = {pi}")
-"""
-client.write_input(session_id, code)
-time.sleep(0.5)
-
-# Exit insert mode (ESC), save and quit (:wq)
-client.write_input(session_id, "\x1b")
-time.sleep(0.3)
-client.write_input(session_id, ":wq\n")
-time.sleep(0.5)
-client.delete_session(session_id)
+# Exit insert mode (ESC), save and quit
+uv run python -m term_wrapper.cli send $SESSION "\x1b"
+sleep 0.3
+uv run python -m term_wrapper.cli send $SESSION ":wq\r"
+sleep 0.5
+uv run python -m term_wrapper.cli delete $SESSION
 
 # Step 2: Edit the file to add exp(1)
-session_id = client.create_session(command=["vim", "/tmp/thepi.py"], rows=24, cols=80)
-time.sleep(1)
+SESSION=$(uv run python -m term_wrapper.cli create vim /tmp/thepi.py | \
+          python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
+sleep 1
 
 # Go to end of file (G), open new line (o)
-client.write_input(session_id, "G")
-time.sleep(0.3)
-client.write_input(session_id, "o")
-time.sleep(0.3)
+uv run python -m term_wrapper.cli send $SESSION "G"
+sleep 0.3
+uv run python -m term_wrapper.cli send $SESSION "o"
+sleep 0.3
 
 # Add exp(1) code
-exp_code = """
-# Compute e (Euler's number)
-e = math.exp(1)
-print(f"e = {e}")
-"""
-client.write_input(session_id, exp_code)
-time.sleep(0.5)
+uv run python -m term_wrapper.cli send $SESSION "\n# Compute e (Euler's number)\ne = math.exp(1)\nprint(f\"e = {e}\")\n"
+sleep 0.5
 
 # Exit insert mode, save and quit
-client.write_input(session_id, "\x1b")
-time.sleep(0.3)
-client.write_input(session_id, ":wq\n")
-time.sleep(0.5)
-
-client.delete_session(session_id)
-client.close()
+uv run python -m term_wrapper.cli send $SESSION "\x1b"
+sleep 0.3
+uv run python -m term_wrapper.cli send $SESSION ":wq\r"
+sleep 0.5
+uv run python -m term_wrapper.cli delete $SESSION
 
 # Result: /tmp/thepi.py now computes both pi and e
+cat /tmp/thepi.py
 ```
 
 ### Example 3: Interactive Claude CLI - FULLY WORKING!
@@ -279,91 +271,14 @@ client.close()
 
 **STATUS: ✓ Interactive mode now works!** Term-wrapper's PTY provides proper raw mode support for Ink-based TUIs.
 
-```python
-import time
-import os
-from term_wrapper.cli import TerminalClient
-
-
-def wait_for_condition(client, session_id, check_func, timeout=60, poll_interval=1):
-    """Poll until condition is met or timeout."""
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        screen = client.get_screen(session_id)
-        if check_func(screen):
-            return screen, True
-        time.sleep(poll_interval)
-    return screen, False
-
-
-# Create client and work directory
-client = TerminalClient(base_url="http://localhost:8000")
-work_dir = "/tmp/claude_example"
-os.makedirs(work_dir, exist_ok=True)
-
-# Create interactive Claude session
-session_id = client.create_session(
-    command=["bash", "-c", f"cd {work_dir} && claude"],
-    rows=40,
-    cols=120
-)
-
-# Step 1: Handle trust prompt
-screen, found = wait_for_condition(
-    client, session_id,
-    lambda s: any("Do you trust" in line for line in s['lines']),
-    timeout=10
-)
-if found:
-    time.sleep(1)  # Let UI stabilize
-    client.write_input(session_id, "\r")  # Press Enter to trust
-    wait_for_condition(
-        client, session_id,
-        lambda s: any("Welcome" in line for line in s['lines']),
-        timeout=10
-    )
-
-# Step 2: Submit request
-request = "create hello.py that prints hello world"
-client.write_input(session_id, request)
-time.sleep(0.5)
-client.write_input(session_id, "\r")  # Submit
-
-# Step 3: Wait for code generation
-screen, found = wait_for_condition(
-    client, session_id,
-    lambda s: any("esc to cancel" in line.lower() for line in s['lines']),
-    timeout=30,
-    poll_interval=2
-)
-
-# Step 4: Approve code
-if found:
-    time.sleep(3)  # CRITICAL: let UI fully render
-    client.write_input(session_id, "\r")  # Approve
-
-    # Wait for file creation
-    wait_for_condition(
-        client, session_id,
-        lambda s: len([f for f in os.listdir(work_dir) if f.endswith('.py')]) > 0,
-        timeout=15
-    )
-
-# Check results
-files = [f for f in os.listdir(work_dir) if f.endswith('.py')]
-print(f"Created: {files}")
-
-# Cleanup
-client.delete_session(session_id)
-client.close()
-```
+This is the same example shown at the top of this document. See "Quick Example: Automate Claude Code" above for the complete CLI implementation.
 
 **Key Requirements for Interactive Mode:**
 
-1. **Use output polling** - Don't use fixed sleeps. Poll `get_screen()` to detect state changes.
-2. **Wait for UI stability** - After detecting UI elements, wait 1-3 seconds before sending input.
+1. **Use output polling** - Use `wait-text` or `wait-quiet` CLI commands instead of fixed sleeps.
+2. **Wait for UI stability** - After detecting UI elements with `wait-text`, add 1-3 second sleep before sending input.
 3. **Handle multiple prompts** - Trust prompt → Request submission → Code approval.
-4. **Poll for completion** - Check filesystem or screen output to detect when Claude is done.
+4. **Poll for completion** - Use `wait-quiet` to detect when output stabilizes, or check filesystem.
 
 **Why Interactive Mode Works:**
 
@@ -374,7 +289,7 @@ Term-wrapper's PTY implementation provides:
 
 The raw mode support added to `terminal.py` enables Ink-based applications like Claude Code to receive keyboard input properly.
 
-**Full Example:** See `examples/claude_interactive.py` for a complete, production-ready implementation.
+**Full Example:** See `examples/claude_interactive.py` for a complete, production-ready Python implementation, or use the CLI commands shown in "Quick Example: Automate Claude Code" above for shell scripts.
 
 ## Parsing Output
 
