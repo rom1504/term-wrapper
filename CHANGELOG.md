@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-01-19
+
+Minor release with major mobile UX improvements and streamlined CLI workflow.
+
+### Added
+- **One-command web workflow**: `term-wrapper web <command>`
+  - Creates session AND opens in browser with single command
+  - Example: `term-wrapper web claude` - starts Claude Code in browser
+  - Example: `term-wrapper web --rows 50 htop` - opens htop with custom dimensions
+  - Auto-detects session ID vs command name using UUID pattern
+  - Still supports `term-wrapper web <session-id>` for existing sessions
+
+### Improved
+- **Much faster mobile touch scrolling**
+  - Scrolls 3 lines per 50px of touch movement (was effectively 1 line)
+  - Added momentum scrolling with smooth deceleration
+  - Prevents default browser scroll to use custom xterm.js scrolling
+  - Natural and responsive feel on mobile devices
+  - Tested with Claude Code generating 40+ line outputs
+
+### Added (Debug Tools)
+- `docs/examples/debug_repeated_thoughts.py` - Debug duplicate content detection
+- `docs/examples/test_mobile_scroll.py` - Comprehensive mobile scroll testing with Claude
+
+### Context
+The `term-wrapper web` command now provides the simplest workflow:
+- Before: `term-wrapper create claude` → copy session ID → `term-wrapper web <id>`
+- Now: `term-wrapper web claude` → done!
+
+Mobile scrolling was too slow (1 position per swipe), making long Claude output
+difficult to read. New momentum-based scrolling feels natural and fast.
+
 ## [0.5.4] - 2026-01-19
 
 Patch release adding Enter button to mobile controls.
