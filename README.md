@@ -82,7 +82,7 @@ Server will start on `http://localhost:8000`
 #### Option A: Using the CLI Client
 
 ```bash
-uv run python -m term_wrapper.cli python3 examples/simple_tui.py
+uv run python -m terminal_wrapper.cli python3 examples/simple_tui.py
 ```
 
 #### Option B: Using HTTP API
@@ -184,8 +184,8 @@ Controls:
 ## Project Structure
 
 ```
-term_wrapper/
-├── term_wrapper/           # Main package
+terminal_wrapper/
+├── terminal_wrapper/      # Main package
 │   ├── terminal.py        # PTY-based terminal emulator
 │   ├── session_manager.py # Session management
 │   ├── api.py            # FastAPI backend

@@ -16,7 +16,7 @@ def main():
     print(f"Open http://{args.host}:{args.port}/ in your browser")
 
     uvicorn.run(
-        "term_wrapper.api:app",
+        "terminal_wrapper.api:app",
         host=args.host,
         port=args.port,
         log_level=args.log_level,

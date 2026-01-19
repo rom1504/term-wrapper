@@ -13,7 +13,7 @@ BASE_URL = "http://localhost:8004"
 def run_server():
     """Run the FastAPI server."""
     uvicorn.run(
-        "term_wrapper.api:app",
+        "terminal_wrapper.api:app",
         host="127.0.0.1",
         port=8004,
         log_level="error",

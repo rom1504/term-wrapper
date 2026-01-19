@@ -289,7 +289,7 @@ wheels = [
 ]
 
 [[package]]
-name = "term-wrapper"
+name = "terminal-wrapper"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

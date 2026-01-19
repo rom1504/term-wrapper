@@ -2,7 +2,7 @@
 
 import asyncio
 import pytest
-from term_wrapper.terminal import Terminal
+from terminal_wrapper.terminal import Terminal
 
 
 @pytest.mark.asyncio
