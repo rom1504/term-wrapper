@@ -32,21 +32,31 @@ jobs:
 
     - name: Run unit tests
       run: |
-        uv run pytest tests/test_terminal.py tests/test_api.py tests/test_e2e.py -v
+        uv run pytest tests/test_terminal.py tests/test_api.py tests/test_screen_buffer.py tests/test_raw_mode.py tests/test_e2e.py -v
 
-    - name: Install vim for integration tests
+    - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y vim
+        sudo apt-get install -y vim htop
 
-    - name: Run vim integration tests
+    - name: Run CLI tests
       run: |
-        uv run pytest tests/test_vim.py -v
+        uv run pytest tests/test_cli.py tests/test_cli_subcommands.py -v
+
+    - name: Run application integration tests
+      run: |
+        uv run pytest tests/test_vim.py tests/test_htop.py tests/test_htop_screen.py tests/test_ink_integration.py -v
+
+    - name: Run CLI e2e tests
+      run: |
+        uv run pytest tests/test_cli_e2e_vim.py tests/test_cli_e2e_htop.py -v
 
     - name: Run frontend e2e tests
       run: |
         uv run pytest tests/test_frontend_e2e.py -v
 
-    # Note: Claude CLI tests (tests/test_claude.py) are skipped in CI
-    # as they require authentication and make real API calls.
+    # Note: Claude CLI tests are skipped in CI as they require Claude CLI
+    # installation and authentication. Skipped tests:
+    # - tests/test_claude.py
+    # - tests/test_cli_e2e_claude.py
     # Run them locally with: uv run pytest tests/test_claude.py -v
