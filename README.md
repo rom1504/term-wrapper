@@ -1,6 +1,6 @@
 # Terminal Wrapper
 
-[![CI](https://github.com/rom1504/terminal_wrapper/workflows/CI/badge.svg)](https://github.com/rom1504/terminal_wrapper/actions/workflows/ci.yml)
+[![CI](https://github.com/rom1504/term_wrapper/workflows/CI/badge.svg)](https://github.com/rom1504/term_wrapper/actions/workflows/ci.yml)
 
 A full-featured terminal emulator with web backend that can run any TUI (Text User Interface) application and control it via HTTP/WebSocket APIs.
 
@@ -82,7 +82,7 @@ Server will start on `http://localhost:8000`
 #### Option A: Using the CLI Client
 
 ```bash
-uv run python -m terminal_wrapper.cli python3 examples/simple_tui.py
+uv run python -m term_wrapper.cli python3 examples/simple_tui.py
 ```
 
 #### Option B: Using HTTP API
@@ -184,8 +184,8 @@ Controls:
 ## Project Structure
 
 ```
-terminal_wrapper/
-├── terminal_wrapper/      # Main package
+term_wrapper/
+├── term_wrapper/      # Main package
 │   ├── terminal.py        # PTY-based terminal emulator
 │   ├── session_manager.py # Session management
 │   ├── api.py            # FastAPI backend

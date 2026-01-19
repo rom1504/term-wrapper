@@ -2,7 +2,7 @@
 
 import pytest
 from fastapi.testclient import TestClient
-from terminal_wrapper.api import app, session_manager
+from term_wrapper.api import app, session_manager
 import asyncio
 
 
