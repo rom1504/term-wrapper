@@ -125,40 +125,69 @@ client.delete_session(session_id)
 client.close()
 ```
 
-### Example 2: Interactive vim Session
+### Example 2: Create and Edit File with vim
+
+**Use case**: Create a Python file with vim, then edit it to add more code.
 
 ```python
-import requests, time
+import time
+from term_wrapper.cli import TerminalClient
 
-# Create vim session
-resp = requests.post("http://localhost:8000/sessions", json={
-    "command": ["vim", "/tmp/test.txt"],
-    "rows": 30,
-    "cols": 100,
-    "env": {"TERM": "xterm-256color"}
-})
-session_id = resp.json()['session_id']
+client = TerminalClient(base_url="http://localhost:8000")
+
+# Step 1: Create /tmp/thepi.py with vim
+session_id = client.create_session(command=["vim", "/tmp/thepi.py"], rows=24, cols=80)
 time.sleep(1)
 
-# Enter insert mode
-requests.post(f"http://localhost:8000/sessions/{session_id}/input",
-              json={"data": "i"})
+# Enter insert mode and write code
+client.write_input(session_id, "i")
+time.sleep(0.3)
 
-# Type some text
-requests.post(f"http://localhost:8000/sessions/{session_id}/input",
-              json={"data": "Hello from term-wrapper!\n"})
+code = """import math
 
-# Exit insert mode (ESC)
-requests.post(f"http://localhost:8000/sessions/{session_id}/input",
-              json={"data": "\x1b"})
+# Compute pi
+pi = math.pi
+print(f"Pi = {pi}")
+"""
+client.write_input(session_id, code)
+time.sleep(0.5)
 
-# Save and quit (:wq)
-requests.post(f"http://localhost:8000/sessions/{session_id}/input",
-              json={"data": ":wq\n"})
+# Exit insert mode (ESC), save and quit (:wq)
+client.write_input(session_id, "\x1b")
+time.sleep(0.3)
+client.write_input(session_id, ":wq\n")
+time.sleep(0.5)
+client.delete_session(session_id)
+
+# Step 2: Edit the file to add exp(1)
+session_id = client.create_session(command=["vim", "/tmp/thepi.py"], rows=24, cols=80)
 time.sleep(1)
 
-# Cleanup
-requests.delete(f"http://localhost:8000/sessions/{session_id}")
+# Go to end of file (G), open new line (o)
+client.write_input(session_id, "G")
+time.sleep(0.3)
+client.write_input(session_id, "o")
+time.sleep(0.3)
+
+# Add exp(1) code
+exp_code = """
+# Compute e (Euler's number)
+e = math.exp(1)
+print(f"e = {e}")
+"""
+client.write_input(session_id, exp_code)
+time.sleep(0.5)
+
+# Exit insert mode, save and quit
+client.write_input(session_id, "\x1b")
+time.sleep(0.3)
+client.write_input(session_id, ":wq\n")
+time.sleep(0.5)
+
+client.delete_session(session_id)
+client.close()
+
+# Result: /tmp/thepi.py now computes both pi and e
 ```
 
 ## Parsing Output
