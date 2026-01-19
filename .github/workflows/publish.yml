@@ -31,8 +31,8 @@ jobs:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
-        uv pip install twine
-        twine upload dist/*
+        uv tool install twine
+        uv tool run twine upload dist/*
 
     - name: Extract version from commit
       id: get_version
