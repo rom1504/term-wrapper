@@ -1,13 +1,43 @@
 [project]
 name = "term-wrapper"
 version = "0.1.0"
-description = "Add your description here"
+description = "PTY-based terminal emulator with web backend for running TUI applications via HTTP/WebSocket APIs"
+readme = "README.md"
 requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "Romain Beaumont", email = "romain.rom1@gmail.com" }
+]
+keywords = ["terminal", "pty", "tui", "webserver", "fastapi", "websocket", "vim", "terminal-emulator"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Shells",
+    "Topic :: Terminals",
+]
+
 dependencies = [
     "fastapi>=0.128.0",
     "httpx>=0.28.1",
-    "pytest>=9.0.2",
-    "pytest-asyncio>=1.3.0",
     "uvicorn>=0.40.0",
     "websockets>=16.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/rom1504/terminal_wrapper"
+Repository = "https://github.com/rom1504/terminal_wrapper"
+Issues = "https://github.com/rom1504/terminal_wrapper/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

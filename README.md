@@ -12,20 +12,26 @@ A full-featured terminal emulator with web backend that can run any TUI (Text Us
 - **Python CLI Client**: Interactive CLI for connecting to remote terminal sessions
 - **Comprehensive Tests**: Unit, integration, and end-to-end tests
 
-## What Works Well
+## What's Supported
 
-✅ **Simple commands**: `ls`, `cat`, `echo`, shell scripts
-✅ **Interactive programs**: Python REPL, bash, simple TUI apps
-✅ **Batch mode tools**: `top -b`, monitoring scripts
-✅ **ANSI color output**: Colors are captured (but need client-side rendering)
+### ✅ Fully Working
 
-## What Needs Client-Side Terminal Emulator
+- **Simple commands**: `ls`, `cat`, `echo`, shell scripts
+- **Interactive programs**: Python REPL, bash, interactive shells
+- **Complex TUI apps**: `vim`, `less`, `nano` (tested with web frontend)
+- **AI CLI tools**: `claude` CLI (tested with both print and interactive modes)
+- **Full-screen apps**: Full support via xterm.js web frontend
+- **ANSI colors & formatting**: Complete support for escape sequences
+- **Terminal resize**: Dynamic window resizing with SIGWINCH
+- **Multiple sessions**: Concurrent terminal sessions with session management
 
-⚠️ **Complex TUI apps**: `vim`, `emacs`, `htop`, `tmux`
-⚠️ **Full-screen apps**: These work but output raw escape sequences
-⚠️ **Mouse support**: PTY captures events, client must handle them
+### 🔧 Backend Only (Raw Output)
 
-**Note**: For complex TUI apps, pair this backend with a terminal emulator library like [xterm.js](https://xtermjs.org/) on the frontend.
+When using the REST API without a terminal emulator frontend:
+- Complex TUI apps output raw ANSI escape sequences
+- Pair with a terminal emulator like [xterm.js](https://xtermjs.org/) for rendering
+
+**Included**: Our web frontend (`frontend/`) provides full xterm.js integration with mobile support.
 
 ## Architecture
 
