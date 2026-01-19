@@ -268,6 +268,21 @@ class TerminalApp {
         this.sessionId = sessionId;
         this.term.clear();
         this.setStatus('Connecting to existing session...', 'connecting');
+
+        // Fetch session info to display the command
+        try {
+            const response = await fetch(`${this.apiBase}/sessions/${sessionId}`);
+            if (response.ok) {
+                const info = await response.json();
+                const filenameEl = document.getElementById('filename');
+                if (filenameEl && info.command) {
+                    filenameEl.textContent = info.command.join(' ');
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch session info:', error);
+        }
+
         this.connectWebSocket();
     }
 

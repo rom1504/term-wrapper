@@ -10,7 +10,7 @@ from .screen_buffer import ScreenBuffer
 class TerminalSession:
     """Represents a terminal session."""
 
-    def __init__(self, session_id: str, terminal: Terminal, rows: int, cols: int):
+    def __init__(self, session_id: str, terminal: Terminal, rows: int, cols: int, command: list[str] = None):
         """Initialize terminal session.
 
         Args:
@@ -18,9 +18,11 @@ class TerminalSession:
             terminal: Terminal instance
             rows: Terminal rows
             cols: Terminal columns
+            command: Command that was run
         """
         self.session_id = session_id
         self.terminal = terminal
+        self.command = command or []
         self.output_buffer: list[bytes] = []
         self.screen_buffer = ScreenBuffer(rows, cols)
         self.lock = asyncio.Lock()
@@ -84,7 +86,7 @@ class SessionManager:
         session_id = str(uuid.uuid4())
         terminal = Terminal(rows, cols)
 
-        session = TerminalSession(session_id, terminal, rows, cols)
+        session = TerminalSession(session_id, terminal, rows, cols, command)
         terminal.output_callback = session.add_output
 
         terminal.spawn(command, env)

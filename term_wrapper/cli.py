@@ -434,11 +434,21 @@ Examples:
     web_parser = subparsers.add_parser("web", help="Open session in browser")
     web_parser.add_argument("session_id", help="Session ID")
 
+    # Stop server
+    subparsers.add_parser("stop", help="Stop the term-wrapper server")
+
     args = parser.parse_args()
 
     if not args.command:
         parser.print_help()
         sys.exit(1)
+
+    # Handle stop command separately (doesn't need server)
+    if args.command == "stop":
+        server_manager = ServerManager()
+        result = server_manager.stop_server()
+        print(json.dumps(result))
+        sys.exit(0 if result["status"] in ["stopped", "not_running"] else 1)
 
     # Auto-discover or start server if URL not provided
     if args.url is None:

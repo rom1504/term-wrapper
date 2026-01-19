@@ -205,6 +205,9 @@ term-wrapper wait-quiet SESSION_ID [--duration SECS] [--timeout SECS]
 # Interactive
 term-wrapper attach SESSION_ID              # WebSocket interactive mode
 term-wrapper web SESSION_ID                 # Open session in browser
+
+# Server Management
+term-wrapper stop                           # Stop the background server
 ```
 
 ### Quick Example: Open Session in Browser

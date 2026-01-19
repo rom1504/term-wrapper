@@ -112,6 +112,7 @@ async def get_session_info(session_id: str) -> JSONResponse:
             "alive": session.terminal.is_alive(),
             "rows": session.terminal.rows,
             "cols": session.terminal.cols,
+            "command": session.command,
         }
     )
 
