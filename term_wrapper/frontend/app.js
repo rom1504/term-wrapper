@@ -326,6 +326,7 @@ class TerminalApp {
         const keys = {
             'esc': '\x1b',
             'tab': '\t',
+            'enter': '\r',
             'ctrl-c': '\x03',
             'ctrl-d': '\x04',
             'up': '\x1b[A',
