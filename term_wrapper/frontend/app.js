@@ -8,6 +8,7 @@ class TerminalApp {
         this.ws = null;
         this.sessionId = null;
         this.apiBase = window.location.origin;
+        this.isNewSession = false;
 
         // Touch handling
         this.touchStartY = 0;
@@ -80,10 +81,6 @@ class TerminalApp {
 
         // Fit with reasonable dimensions (max 120 cols for TUI app compatibility)
         this.fitTerminal();
-
-        // Show connecting message
-        this.term.writeln('\x1b[1;32mConnecting to terminal...\x1b[0m');
-        this.term.writeln('');
 
         // Handle input from terminal
         this.term.onData(data => {
@@ -188,6 +185,9 @@ class TerminalApp {
 
             // Clear terminal and connect
             this.term.clear();
+
+            // Mark that this is a new session (no resize needed on connect)
+            this.isNewSession = true;
             this.connectWebSocket();
 
         } catch (error) {
@@ -209,9 +209,14 @@ class TerminalApp {
             this.setStatus(`Connected (Session: ${this.sessionId})`, 'connected');
             document.getElementById('disconnectBtn').disabled = false;
 
-            // Sync backend terminal size with frontend display
-            // (in case session was created with different dimensions)
-            this.resizeSession(this.term.rows, this.term.cols);
+            // Only resize if connecting to existing session
+            // (new sessions are already created with correct dimensions)
+            if (!this.isNewSession) {
+                // Sync backend terminal size with frontend display
+                // (in case session was created with different dimensions)
+                this.resizeSession(this.term.rows, this.term.cols);
+            }
+            this.isNewSession = false;
 
             this.term.focus();
         };

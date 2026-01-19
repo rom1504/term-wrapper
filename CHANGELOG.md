@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-01-19
+
+Patch release fixing web terminal vertical layout for Claude Code and TUI apps.
+
+### Fixed
+- Web terminal vertical layout and spacing
+  - Removed initial "Connecting to terminal..." message from buffer
+  - Skip unnecessary resize when connecting to newly-created sessions
+  - Only resize backend when reconnecting to existing sessions
+  - Eliminates unnecessary SIGWINCH signal causing TUI apps to redraw
+  - Cleaner initial state with content starting from top of screen
+
 ## [0.5.1] - 2026-01-19
 
 Patch release fixing web terminal alignment.

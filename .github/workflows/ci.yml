@@ -39,6 +39,11 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y vim htop
 
+    - name: Install Playwright dependencies
+      run: |
+        sudo apt-get install -y libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1
+        uv run playwright install chromium
+
     - name: Run CLI tests
       run: |
         uv run pytest tests/test_cli.py tests/test_cli_subcommands.py -v
@@ -54,6 +59,18 @@ jobs:
     - name: Run frontend e2e tests
       run: |
         uv run pytest tests/test_frontend_e2e.py -v
+
+    - name: Run Playwright web tests
+      run: |
+        uv run pytest tests/test_web_playwright.py -v
+
+    - name: Upload Playwright screenshots
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-screenshots
+        path: test_screenshots/
+        if-no-files-found: ignore
 
     # Note: Claude CLI tests are skipped in CI as they require Claude CLI
     # installation and authentication. Skipped tests:
