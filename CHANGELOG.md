@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-01-19
+
+Patch release fixing web terminal alignment.
+
+### Fixed
+- Web terminal now syncs backend dimensions after connecting
+  - Backend session is resized to match frontend display (120 cols max)
+  - Fixes Claude Code and TUI apps appearing misaligned in browser
+  - Frontend was capped at 120 cols but backend kept original dimensions
+
 ## [0.5.0] - 2026-01-19
 
 Minor release with automatic script detection and improved usability.
