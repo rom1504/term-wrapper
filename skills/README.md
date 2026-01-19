@@ -4,26 +4,21 @@ This directory contains skill definitions for using term-wrapper with Claude Cod
 
 ## Available Skills
 
-### `/tui` - Run Interactive TUI Applications
+### `/term-wrapper` - Run Terminal Applications via API
 
-Launch and interact with any terminal user interface (TUI) application through term-wrapper.
+Launch and interact with any terminal application through the term-wrapper HTTP API.
 
-**Usage:**
-```
-/tui <command> [args...]
-```
+**What it does:**
+- Runs any CLI/TUI application via HTTP
+- Sends keyboard input programmatically
+- Retrieves and parses terminal output
+- Enables AI control of terminal applications
 
-**Examples:**
-- `/tui htop` - System monitor
-- `/tui vim myfile.txt` - Text editor
-- `/tui python` - Python REPL
-- `/tui bash` - Interactive shell
-
-See [tui.md](./tui.md) for full documentation.
+See [term-wrapper.md](./term-wrapper.md) for complete self-contained instructions.
 
 ## How Skills Work
 
-Skills are special instructions that help Claude understand how to use term-wrapper to run interactive TUI applications. When you invoke a skill like `/tui htop`, Claude will:
+Skills are special instructions that help Claude understand how to use term-wrapper to run interactive TUI applications. When you invoke a skill like `/term-wrapper htop`, Claude will:
 
 1. Start the term-wrapper server if needed
 2. Create a terminal session with your command
@@ -42,7 +37,7 @@ uv run python examples/htop_demo.py
 
 Or use Claude Code:
 ```
-/tui htop
+/term-wrapper htop
 ```
 
 Claude will launch htop and help you navigate through:
@@ -54,7 +49,7 @@ Claude will launch htop and help you navigate through:
 ### Editing Files with vim
 
 ```
-/tui vim myfile.txt
+/term-wrapper vim myfile.txt
 ```
 
 Claude will help you:
@@ -66,7 +61,7 @@ Claude will help you:
 ### Python REPL
 
 ```
-/tui python
+/term-wrapper python
 ```
 
 Interact with a Python interpreter through the terminal wrapper.

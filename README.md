@@ -168,12 +168,12 @@ Each report includes:
 
 ## Claude Code Skills
 
-Want to use term-wrapper with Claude Code? Check out the `/tui` skill!
+Want to use term-wrapper with Claude Code? Check out the `/term-wrapper` skill!
 
 ```bash
-/tui htop              # Launch system monitor
-/tui vim myfile.txt    # Edit files
-/tui python            # Python REPL
+/term-wrapper htop              # Launch system monitor
+/term-wrapper vim myfile.txt    # Edit files
+/term-wrapper python            # Python REPL
 ```
 
 See [skills/README.md](skills/README.md) for full documentation.
@@ -227,7 +227,7 @@ term_wrapper/
 │   ├── htop_demo.py      # Interactive htop demonstration
 │   └── simple_tui.py     # Python TUI demo
 ├── skills/               # Claude Code skills
-│   ├── tui.md            # /tui skill for running TUI apps
+│   ├── tui.md            # /term-wrapper skill for running TUI apps
 │   └── README.md         # Skills documentation
 ├── frontend/             # Web frontend with xterm.js
 ├── docs/                 # Documentation
