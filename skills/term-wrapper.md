@@ -190,6 +190,54 @@ client.close()
 # Result: /tmp/thepi.py now computes both pi and e
 ```
 
+### Example 3: Use Claude CLI to Create and Run Code
+
+**Use case**: Use Claude CLI (running inside term-wrapper) to write and execute code.
+
+```python
+import time
+from term_wrapper.cli import TerminalClient
+
+client = TerminalClient(base_url="http://localhost:8000")
+
+# Run Claude CLI non-interactively with request piped in
+cmd = (
+    'cd /tmp/myclaudetest && '
+    'echo "Create a Python file that computes pi to the 25th digit and prints it. Then run the file." | '
+    'claude --dangerously-skip-permissions; '
+    'sleep 30'
+)
+
+session_id = client.create_session(command=["bash", "-c", cmd], rows=40, cols=120)
+
+# Wait for Claude to complete
+time.sleep(35)
+
+# Get what Claude reported
+screen_data = client.get_screen(session_id)
+lines = screen_data['lines']
+
+# Look for Claude's output
+for line in lines:
+    if 'Pi to' in line or '3.14' in line:
+        print(line)
+
+client.delete_session(session_id)
+client.close()
+
+# Check the created file
+import subprocess
+result = subprocess.run(['python3', '/tmp/myclaudetest/compute_pi.py'],
+                       capture_output=True, text=True, timeout=5)
+print(result.stdout)
+# Output: Pi to 25 decimal places: 3.141592653589793238462643
+```
+
+**Notes:**
+- Uses `--dangerously-skip-permissions` to bypass permission prompts
+- Pipes request to Claude via `echo | claude` for non-interactive execution
+- Claude creates the file, handles dependencies, and runs it automatically
+
 ## Parsing Output
 
 ### ANSI Escape Sequence Removal
