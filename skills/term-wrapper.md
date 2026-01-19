@@ -194,49 +194,64 @@ client.close()
 
 **Use case**: Use Claude CLI (running inside term-wrapper) to write and execute code.
 
+**Method 1: Piped Input (Recommended - Non-Interactive)**
+
 ```python
 import time
 from term_wrapper.cli import TerminalClient
 
 client = TerminalClient(base_url="http://localhost:8000")
 
-# Run Claude CLI non-interactively with request piped in
+# Run Claude CLI with piped input - reliable but can't see progress
 cmd = (
-    'cd /tmp/myclaudetest && '
-    'echo "Create a Python file that computes pi to the 25th digit and prints it. Then run the file." | '
-    'claude --dangerously-skip-permissions; '
-    'sleep 30'
+    'cd /tmp/myproject && '
+    'echo "Create a Python file that computes pi to the 25th digit and prints it. Then run it." | '
+    'claude --dangerously-skip-permissions && '
+    'sleep 10'  # Keep session alive to see results
 )
 
 session_id = client.create_session(command=["bash", "-c", cmd], rows=40, cols=120)
 
-# Wait for Claude to complete
-time.sleep(35)
+# Wait for Claude to complete (adjust based on task complexity)
+time.sleep(30)
 
-# Get what Claude reported
+# Get Claude's screen output
 screen_data = client.get_screen(session_id)
 lines = screen_data['lines']
 
-# Look for Claude's output
+# Extract results
 for line in lines:
-    if 'Pi to' in line or '3.14' in line:
+    if 'Pi to' in line or '3.14' in line or 'Created' in line:
         print(line)
 
 client.delete_session(session_id)
 client.close()
+```
 
-# Check the created file
-import subprocess
-result = subprocess.run(['python3', '/tmp/myclaudetest/compute_pi.py'],
-                       capture_output=True, text=True, timeout=5)
-print(result.stdout)
-# Output: Pi to 25 decimal places: 3.141592653589793238462643
+**Method 2: Direct Bash Execution (Fastest)**
+
+```python
+# Even simpler - just run in bash and check files afterward
+import subprocess, time
+
+result = subprocess.run([
+    'bash', '-c',
+    'cd /tmp/myproject && echo "create hello.py" | claude --dangerously-skip-permissions'
+], capture_output=True, text=True, timeout=30)
+
+time.sleep(2)
+
+# Check created files
+import os
+files = os.listdir('/tmp/myproject')
+print(f"Created: {files}")
 ```
 
 **Notes:**
-- Uses `--dangerously-skip-permissions` to bypass permission prompts
-- Pipes request to Claude via `echo | claude` for non-interactive execution
-- Claude creates the file, handles dependencies, and runs it automatically
+- `--dangerously-skip-permissions` bypasses all permission prompts
+- Piped input (`echo "..." | claude`) works for non-interactive requests
+- Wait times depend on task complexity (file creation: ~10s, complex tasks: ~30s+)
+- For interactive mode (seeing Claude think), use the web UI instead
 
 ## Parsing Output
 
