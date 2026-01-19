@@ -338,67 +338,200 @@ class TerminalClient:
         self.http_client.close()
 
 
-async def main():
-    """Main CLI entry point."""
+def sync_main():
+    """Main CLI entry point (synchronous commands)."""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Terminal Wrapper CLI")
+    parser = argparse.ArgumentParser(
+        description="Terminal Wrapper CLI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Create a session (flags before command)
+  term-wrapper create --rows 40 --cols 120 bash
+  term-wrapper create bash -c "ls -la"
+
+  # Send input to a session
+  term-wrapper send <session-id> "ls -la\\r"
+
+  # Wait for text to appear
+  term-wrapper wait-text <session-id> "username:"
+
+  # Get clean text output
+  term-wrapper get-text <session-id>
+
+  # Attach interactively
+  term-wrapper attach <session-id>
+        """
+    )
     parser.add_argument(
         "--url",
         default="http://localhost:8000",
-        help="Backend server URL",
-    )
-    parser.add_argument(
-        "command",
-        nargs="+",
-        help="Command to run in terminal",
-    )
-    parser.add_argument(
-        "--rows",
-        type=int,
-        default=24,
-        help="Terminal rows",
-    )
-    parser.add_argument(
-        "--cols",
-        type=int,
-        default=80,
-        help="Terminal columns",
+        help="Backend server URL (default: http://localhost:8000)",
     )
 
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+
+    # Create session
+    create_parser = subparsers.add_parser("create", help="Create a new terminal session")
+    create_parser.add_argument("--rows", type=int, default=24, help="Terminal rows")
+    create_parser.add_argument("--cols", type=int, default=80, help="Terminal columns")
+    create_parser.add_argument("--env", help="Environment variables as JSON")
+    create_parser.add_argument("cmd", nargs=argparse.REMAINDER, help="Command to run")
+
+    # List sessions
+    subparsers.add_parser("list", help="List all sessions")
+
+    # Get session info
+    info_parser = subparsers.add_parser("info", help="Get session information")
+    info_parser.add_argument("session_id", help="Session ID")
+
+    # Delete session
+    delete_parser = subparsers.add_parser("delete", help="Delete a session")
+    delete_parser.add_argument("session_id", help="Session ID")
+
+    # Send input
+    send_parser = subparsers.add_parser("send", help="Send input to session")
+    send_parser.add_argument("session_id", help="Session ID")
+    send_parser.add_argument("text", help="Text to send (use \\n for newline, \\r for enter)")
+
+    # Get output
+    output_parser = subparsers.add_parser("get-output", help="Get raw output")
+    output_parser.add_argument("session_id", help="Session ID")
+    output_parser.add_argument("--no-clear", action="store_true", help="Don't clear buffer")
+
+    # Get text
+    text_parser = subparsers.add_parser("get-text", help="Get clean text output")
+    text_parser.add_argument("session_id", help="Session ID")
+    text_parser.add_argument("--no-strip-ansi", action="store_true", help="Don't strip ANSI codes")
+    text_parser.add_argument("--source", choices=["output", "screen"], default="output",
+                            help="Source to read from")
+
+    # Get screen
+    screen_parser = subparsers.add_parser("get-screen", help="Get parsed screen buffer")
+    screen_parser.add_argument("session_id", help="Session ID")
+
+    # Wait for text
+    wait_text_parser = subparsers.add_parser("wait-text", help="Wait for specific text to appear")
+    wait_text_parser.add_argument("session_id", help="Session ID")
+    wait_text_parser.add_argument("text", help="Text to wait for")
+    wait_text_parser.add_argument("--timeout", type=float, default=30, help="Timeout in seconds")
+    wait_text_parser.add_argument("--poll-interval", type=float, default=0.5, help="Poll interval in seconds")
+
+    # Wait for quiet
+    wait_quiet_parser = subparsers.add_parser("wait-quiet", help="Wait for output to stabilize")
+    wait_quiet_parser.add_argument("session_id", help="Session ID")
+    wait_quiet_parser.add_argument("--duration", type=float, default=2.0, help="Quiet duration in seconds")
+    wait_quiet_parser.add_argument("--timeout", type=float, default=30, help="Timeout in seconds")
+
+    # Attach (interactive)
+    attach_parser = subparsers.add_parser("attach", help="Attach to session interactively")
+    attach_parser.add_argument("session_id", help="Session ID")
+
     args = parser.parse_args()
+
+    if not args.command:
+        parser.print_help()
+        sys.exit(1)
 
     client = TerminalClient(base_url=args.url)
 
     try:
-        # Create session
-        print(f"Creating session for command: {' '.join(args.command)}")
-        session_id = client.create_session(
-            command=args.command,
-            rows=args.rows,
-            cols=args.cols,
-        )
-        print(f"Session created: {session_id}")
-        print("Starting interactive session (press Ctrl+C to exit)...")
-        print()
+        if args.command == "create":
+            env = json.loads(args.env) if args.env else None
+            session_id = client.create_session(
+                command=args.cmd,
+                rows=args.rows,
+                cols=args.cols,
+                env=env
+            )
+            print(json.dumps({"session_id": session_id}))
 
-        # Start interactive session
-        await client.interactive_session(session_id)
+        elif args.command == "list":
+            sessions = client.list_sessions()
+            print(json.dumps({"sessions": sessions}))
 
-    except KeyboardInterrupt:
-        print("\n\nInterrupted by user")
+        elif args.command == "info":
+            info = client.get_session_info(args.session_id)
+            print(json.dumps(info))
+
+        elif args.command == "delete":
+            client.delete_session(args.session_id)
+            print(json.dumps({"status": "deleted"}))
+
+        elif args.command == "send":
+            # Process escape sequences (\n, \r, \t, \x1b, etc.)
+            import codecs
+            try:
+                # Decode escape sequences (handles \n, \r, \t, \xNN, etc.)
+                text = codecs.decode(args.text, 'unicode_escape')
+            except Exception:
+                # If decoding fails, use text as-is
+                text = args.text
+            client.write_input(args.session_id, text)
+            print(json.dumps({"status": "sent"}))
+
+        elif args.command == "get-output":
+            output = client.get_output(args.session_id, clear=not args.no_clear)
+            print(output, end="")
+
+        elif args.command == "get-text":
+            text = client.get_text(
+                args.session_id,
+                strip_ansi_codes=not args.no_strip_ansi,
+                source=args.source
+            )
+            print(text, end="")
+
+        elif args.command == "get-screen":
+            screen = client.get_screen(args.session_id)
+            print(json.dumps(screen))
+
+        elif args.command == "wait-text":
+            found = client.wait_for_text(
+                args.session_id,
+                args.text,
+                timeout=args.timeout,
+                poll_interval=args.poll_interval
+            )
+            print(json.dumps({"found": found}))
+
+        elif args.command == "wait-quiet":
+            stable = client.wait_for_quiet(
+                args.session_id,
+                duration=args.duration,
+                timeout=args.timeout
+            )
+            print(json.dumps({"stable": stable}))
+
+        elif args.command == "attach":
+            # This needs async
+            asyncio.run(attach_interactive(client, args.session_id))
+
+    except TimeoutError as e:
+        print(json.dumps({"error": str(e)}), file=sys.stderr)
+        sys.exit(1)
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        print(json.dumps({"error": str(e)}), file=sys.stderr)
         sys.exit(1)
     finally:
-        # Clean up
-        try:
-            client.delete_session(session_id)
-            print(f"\nSession {session_id} deleted")
-        except Exception:
-            pass
         client.close()
 
 
+async def attach_interactive(client: TerminalClient, session_id: str):
+    """Attach to a session interactively."""
+    try:
+        print(f"Attaching to session {session_id}...")
+        print("(Press Ctrl+C to detach)\n")
+        await client.interactive_session(session_id)
+    except KeyboardInterrupt:
+        print("\n\nDetached from session")
+
+
+async def main():
+    """Main entry point for backwards compatibility."""
+    sync_main()
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    sync_main()
