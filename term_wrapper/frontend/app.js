@@ -344,25 +344,56 @@ class TerminalApp {
     // Touch handling for mobile scrolling
     handleTouchStart(e) {
         this.touchStartY = e.touches[0].clientY;
+        this.lastTouchY = e.touches[0].clientY;
         this.isScrolling = false;
+        this.scrollVelocity = 0;
     }
 
     handleTouchMove(e) {
         if (!this.touchStartY) return;
 
         const touchY = e.touches[0].clientY;
-        const diff = this.touchStartY - touchY;
+        const diff = touchY - this.lastTouchY;
+        const totalDiff = touchY - this.touchStartY;
 
         // Detect if user is scrolling (not typing)
-        if (Math.abs(diff) > 10) {
+        if (Math.abs(totalDiff) > 10) {
             this.isScrolling = true;
-            // Let default scroll behavior work
+            e.preventDefault(); // Prevent default to use custom scrolling
+
+            // Calculate scroll amount (faster scrolling, 3 lines per 50px)
+            const scrollAmount = Math.round(diff / 50 * 3);
+
+            if (scrollAmount !== 0) {
+                this.term.scrollLines(-scrollAmount); // Negative because touch down = scroll up
+                this.scrollVelocity = scrollAmount;
+            }
+
+            this.lastTouchY = touchY;
         }
     }
 
     handleTouchEnd(e) {
+        // Apply momentum scrolling if velocity is high enough
+        if (Math.abs(this.scrollVelocity) > 1) {
+            let momentum = this.scrollVelocity;
+            const decay = 0.9;
+
+            const momentumScroll = () => {
+                if (Math.abs(momentum) > 0.1) {
+                    this.term.scrollLines(-Math.round(momentum));
+                    momentum *= decay;
+                    setTimeout(momentumScroll, 16); // ~60fps
+                }
+            };
+
+            momentumScroll();
+        }
+
         this.touchStartY = 0;
+        this.lastTouchY = 0;
         this.isScrolling = false;
+        this.scrollVelocity = 0;
     }
 
     setStatus(message, type) {

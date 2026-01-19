@@ -431,8 +431,11 @@ Examples:
     attach_parser.add_argument("session_id", help="Session ID")
 
     # Web (open in browser)
-    web_parser = subparsers.add_parser("web", help="Open session in browser")
-    web_parser.add_argument("session_id", help="Session ID")
+    web_parser = subparsers.add_parser("web", help="Open session in browser or create and open")
+    web_parser.add_argument("session_or_command", help="Session ID or command to run")
+    web_parser.add_argument("cmd_args", nargs=argparse.REMAINDER, help="Additional command arguments")
+    web_parser.add_argument("--rows", type=int, default=40, help="Terminal rows (when creating new session)")
+    web_parser.add_argument("--cols", type=int, default=120, help="Terminal columns (when creating new session)")
 
     # Stop server
     subparsers.add_parser("stop", help="Stop the term-wrapper server")
@@ -539,9 +542,26 @@ Examples:
             asyncio.run(attach_interactive(client, args.session_id))
 
         elif args.command == "web":
+            # Check if session_or_command is a session ID (UUID format)
+            import re
+            uuid_pattern = r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+
+            if re.match(uuid_pattern, args.session_or_command):
+                # It's a session ID - open existing session
+                session_id = args.session_or_command
+            else:
+                # It's a command - create new session and open
+                command = [args.session_or_command] + args.cmd_args if args.cmd_args else [args.session_or_command]
+                session_id = client.create_session(
+                    command=command,
+                    rows=args.rows,
+                    cols=args.cols
+                )
+                print(json.dumps({"session_id": session_id, "command": command}))
+
             # Open session in browser
-            web_url = f"{url}/?session={args.session_id}"
-            print(json.dumps({"url": web_url, "session_id": args.session_id}))
+            web_url = f"{url}/?session={session_id}"
+            print(json.dumps({"url": web_url, "session_id": session_id}))
             webbrowser.open(web_url)
 
     except TimeoutError as e:
