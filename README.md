@@ -166,7 +166,33 @@ Each report includes:
 
 **Want to add a new application?** See [reports/TESTING_GUIDE.md](reports/TESTING_GUIDE.md) for a comprehensive step-by-step guide on testing and documenting new TUI applications.
 
+## Claude Code Skills
+
+Want to use term-wrapper with Claude Code? Check out the `/tui` skill!
+
+```bash
+/tui htop              # Launch system monitor
+/tui vim myfile.txt    # Edit files
+/tui python            # Python REPL
+```
+
+See [skills/README.md](skills/README.md) for full documentation.
+
 ## Example TUI Apps
+
+### Interactive htop Demo (`examples/htop_demo.py`)
+
+Demonstrates full interaction with htop system monitor:
+```bash
+uv run python examples/htop_demo.py
+```
+
+Features:
+- Navigate process list with arrow keys
+- Toggle tree view
+- Change sort order
+- Interactive command mode
+- Live system monitoring through the API
 
 ### Python TUI App (`examples/simple_tui.py`)
 
@@ -198,7 +224,11 @@ term_wrapper/
 ├── examples/             # Example applications
 │   ├── simple_example.py # Simple HTTP API usage
 │   ├── vim_example.py    # Vim automation example
+│   ├── htop_demo.py      # Interactive htop demonstration
 │   └── simple_tui.py     # Python TUI demo
+├── skills/               # Claude Code skills
+│   ├── tui.md            # /tui skill for running TUI apps
+│   └── README.md         # Skills documentation
 ├── frontend/             # Web frontend with xterm.js
 ├── docs/                 # Documentation
 ├── scripts/              # Utility scripts
