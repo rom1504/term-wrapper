@@ -489,6 +489,33 @@ Built with:
 - **pytest** - Testing framework
 - **websockets** - WebSocket support
 
+### Release Process
+
+Releases are automated through GitHub Actions when a commit message starts with "Release":
+
+**Format:**
+```
+Release v0.5.2 - Brief description (optional)
+```
+
+The workflow will:
+1. Extract the version (e.g., `v0.5.2`) from the commit message
+2. Build the package with `uv build`
+3. Publish to PyPI using stored credentials
+4. Create a GitHub release with the same tag
+
+**Steps to release:**
+1. Update `version` in `pyproject.toml`
+2. Update `CHANGELOG.md` with release notes
+3. Commit changes with message starting with "Release":
+   ```bash
+   git commit -m "Release v0.5.2 - Description of changes"
+   git push
+   ```
+4. The CI will automatically publish to PyPI and create a GitHub release
+
+**Note:** The version in the commit message must match `pyproject.toml`.
+
 ## License
 
 ISC

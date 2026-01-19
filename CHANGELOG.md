@@ -18,6 +18,24 @@ Patch release fixing web terminal vertical layout for Claude Code and TUI apps.
   - Only resize backend when reconnecting to existing sessions
   - Eliminates unnecessary SIGWINCH signal causing TUI apps to redraw
   - Cleaner initial state with content starting from top of screen
+- Validation code no longer interferes with fast-completing commands
+  - Only catches startup failures (non-zero exit codes)
+  - Fast commands like `echo` work correctly
+
+### Added
+- Comprehensive Playwright debugging guide (`docs/PLAYWRIGHT_DEBUGGING.md`)
+  - Complete tutorial on debugging TUI apps with screenshots
+  - Example script for interactive debugging (`docs/examples/debug_claude_vertical.py`)
+  - Common patterns for extracting terminal state and content
+  - Instructions for viewing CI screenshots from GitHub artifacts
+- Playwright test for htop rendering in web terminal
+  - Runs in CI (htop installed by default)
+  - Verifies TUI app rendering and dimensions
+  - Screenshots uploaded as GitHub artifacts
+  - Claude rendering test skips gracefully when CLI not available
+- htop screenshot in README
+  - Shows visual example of TUI app running in web terminal
+  - Downloaded from CI artifacts for consistency
 
 ## [0.5.1] - 2026-01-19
 
