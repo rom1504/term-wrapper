@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-01-19
+
+Patch release fixing server startup for pip-installed packages.
+
+### Fixed
+- Server startup error when installed via pip (main.py not found)
+- ServerManager now uses `python -m term_wrapper.server` instead of file path
+- Moved server entry point into package (term_wrapper/server.py)
+
+### Added
+- `term-wrapper-server` console script for manual server startup
+
 ## [0.3.0] - 2026-01-19
 
 Major UX improvement release with auto-start functionality.
