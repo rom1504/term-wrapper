@@ -40,6 +40,20 @@ class Terminal:
         if self._running:
             raise RuntimeError("Terminal already has a running process")
 
+        # Auto-detect scripts without shebangs and wrap in bash
+        if command and os.path.exists(command[0]) and os.path.isfile(command[0]):
+            try:
+                with open(command[0], 'rb') as f:
+                    first_bytes = f.read(512)  # Read more to check if it's text
+                    # Skip if it's a binary (ELF, compiled executable, etc.)
+                    if first_bytes.startswith(b'\x7fELF') or b'\x00' in first_bytes[:256]:
+                        pass  # It's binary, let execvp handle it
+                    # If file doesn't start with shebang (#!) and looks like text, wrap in bash
+                    elif first_bytes[:2] != b'#!' and os.access(command[0], os.X_OK):
+                        command = ['bash', command[0]] + command[1:]
+            except (OSError, IOError):
+                pass  # If we can't read it, let execvp try
+
         # Create PTY
         self.pid, self.master_fd = pty.fork()
 
