@@ -4,11 +4,23 @@ import json
 import sys
 from unittest.mock import Mock, patch, MagicMock
 import pytest
+from contextlib import contextmanager
+
+
+@contextmanager
+def mock_cli_environment():
+    """Context manager that mocks both ServerManager and TerminalClient."""
+    with patch("term_wrapper.cli.ServerManager") as MockServerManager:
+        mock_server_manager = MockServerManager.return_value
+        mock_server_manager.get_server_url.return_value = "http://localhost:8888"
+
+        with patch("term_wrapper.cli.TerminalClient") as MockClient:
+            yield MockClient, mock_server_manager
 
 
 def test_cli_create_session():
     """Test 'create' subcommand."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.create_session.return_value = "test-session-123"
 
@@ -27,7 +39,7 @@ def test_cli_create_session():
 
 def test_cli_create_with_dimensions():
     """Test 'create' subcommand with custom rows/cols."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.create_session.return_value = "test-session-456"
 
@@ -45,7 +57,7 @@ def test_cli_create_with_dimensions():
 
 def test_cli_list_sessions():
     """Test 'list' subcommand."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.list_sessions.return_value = ["session-1", "session-2"]
 
@@ -59,7 +71,7 @@ def test_cli_list_sessions():
 
 def test_cli_get_info():
     """Test 'info' subcommand."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.get_session_info.return_value = {
             "session_id": "test-123",
@@ -78,7 +90,7 @@ def test_cli_get_info():
 
 def test_cli_delete_session():
     """Test 'delete' subcommand."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
 
         with patch("sys.argv", ["term-wrapper", "delete", "test-123"]):
@@ -91,7 +103,7 @@ def test_cli_delete_session():
 
 def test_cli_send_input():
     """Test 'send' subcommand."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
 
         with patch("sys.argv", ["term-wrapper", "send", "test-123", "hello\\nworld"]):
@@ -105,7 +117,7 @@ def test_cli_send_input():
 
 def test_cli_send_input_with_enter():
     """Test 'send' subcommand with \\r (enter)."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
 
         with patch("sys.argv", ["term-wrapper", "send", "test-123", "ls\\r"]):
@@ -118,7 +130,7 @@ def test_cli_send_input_with_enter():
 
 def test_cli_get_output():
     """Test 'get-output' subcommand."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.get_output.return_value = "test output"
 
@@ -133,7 +145,7 @@ def test_cli_get_output():
 
 def test_cli_get_output_no_clear():
     """Test 'get-output' subcommand with --no-clear."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.get_output.return_value = "test output"
 
@@ -147,7 +159,7 @@ def test_cli_get_output_no_clear():
 
 def test_cli_get_text():
     """Test 'get-text' subcommand."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.get_text.return_value = "clean text"
 
@@ -166,7 +178,7 @@ def test_cli_get_text():
 
 def test_cli_get_text_no_strip():
     """Test 'get-text' with --no-strip-ansi."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.get_text.return_value = "text with ansi"
 
@@ -184,7 +196,7 @@ def test_cli_get_text_no_strip():
 
 def test_cli_get_text_screen_source():
     """Test 'get-text' with --source screen."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.get_text.return_value = "screen text"
 
@@ -202,7 +214,7 @@ def test_cli_get_text_screen_source():
 
 def test_cli_get_screen():
     """Test 'get-screen' subcommand."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.get_screen.return_value = {
             "lines": ["line1", "line2"],
@@ -221,7 +233,7 @@ def test_cli_get_screen():
 
 def test_cli_wait_text():
     """Test 'wait-text' subcommand."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.wait_for_text.return_value = True
 
@@ -241,7 +253,7 @@ def test_cli_wait_text():
 
 def test_cli_wait_text_custom_timeout():
     """Test 'wait-text' with custom timeout."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.wait_for_text.return_value = True
 
@@ -260,7 +272,7 @@ def test_cli_wait_text_custom_timeout():
 
 def test_cli_wait_quiet():
     """Test 'wait-quiet' subcommand."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.wait_for_quiet.return_value = True
 
@@ -279,7 +291,7 @@ def test_cli_wait_quiet():
 
 def test_cli_wait_quiet_custom_duration():
     """Test 'wait-quiet' with custom duration."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.wait_for_quiet.return_value = True
 
@@ -297,7 +309,7 @@ def test_cli_wait_quiet_custom_duration():
 
 def test_cli_timeout_error():
     """Test CLI handles TimeoutError correctly."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.wait_for_text.side_effect = TimeoutError("Text not found")
 
@@ -311,7 +323,7 @@ def test_cli_timeout_error():
 
 def test_cli_generic_error():
     """Test CLI handles generic errors correctly."""
-    with patch("term_wrapper.cli.TerminalClient") as MockClient:
+    with mock_cli_environment() as (MockClient, _):
         mock_instance = MockClient.return_value
         mock_instance.create_session.side_effect = Exception("Connection failed")
 
