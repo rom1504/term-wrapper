@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.3] - 2026-01-19
+
+Patch release fixing Claude Code rendering duplication bug.
+
+### Fixed
+- Claude Code rendering duplication in web terminal
+  - Frontend now checks if backend dimensions match before resizing
+  - Prevents unnecessary SIGWINCH signal when connecting to existing sessions
+  - Eliminates duplicate content overlays caused by unnecessary redraws
+  - Bug occurred when test created session with same dimensions as browser
+
+### Changed
+- Claude rendering test now skips in CI environment
+  - Added CI environment variable check
+  - Prevents Claude CLI from running in GitHub Actions
+  - Test still runs locally for manual validation
+
+### Added
+- Comprehensive Claude rendering test (`docs/examples/test_claude_rendering.py`)
+  - Validates 6 different interaction scenarios
+  - Takes 8 screenshots at key interaction points
+  - Automatic content duplication detection
+  - Scrolling behavior validation
+  - Approval UI interaction testing
+  - Buffer state analysis
+  - Confirms perfect rendering with no overlapping content
+
 ## [0.5.2] - 2026-01-19
 
 Patch release fixing web terminal vertical layout for Claude Code and TUI apps.
