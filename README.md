@@ -330,17 +330,11 @@ Each report includes:
 
 **Want to add a new application?** See [reports/TESTING_GUIDE.md](reports/TESTING_GUIDE.md) for a comprehensive step-by-step guide on testing and documenting new TUI applications.
 
-## Claude Code Skills
+## Claude Code Skill
 
-Want to use term-wrapper with Claude Code? Check out the `/term-wrapper` skill!
+Want to use term-wrapper with Claude Code? Check out the Term Wrapper skill!
 
-```bash
-/term-wrapper htop              # Launch system monitor
-/term-wrapper vim myfile.txt    # Edit files
-/term-wrapper python            # Python REPL
-```
-
-See [skills/README.md](skills/README.md) for full documentation.
+The skill enables Claude to control any terminal application programmatically. See [skill/SKILL.md](skill/SKILL.md) for complete instructions on using term-wrapper with CLI commands, Python, or HTTP APIs.
 
 ## Example TUI Apps
 
@@ -390,9 +384,8 @@ term_wrapper/
 │   ├── vim_example.py    # Vim automation example
 │   ├── htop_demo.py      # Interactive htop demonstration
 │   └── simple_tui.py     # Python TUI demo
-├── skills/               # Claude Code skills
-│   ├── tui.md            # /term-wrapper skill for running TUI apps
-│   └── README.md         # Skills documentation
+├── skill/                # Claude Code skill
+│   └── SKILL.md          # Term Wrapper skill for AI agents
 ├── frontend/             # Web frontend with xterm.js
 ├── docs/                 # Documentation
 ├── scripts/              # Utility scripts

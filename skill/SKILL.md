@@ -1,16 +1,11 @@
-# Term-Wrapper Skill
+---
+name: Term Wrapper
+description: Control any terminal application (TUI, CLI, or interactive program) programmatically through HTTP API or CLI commands. Use when you need to: (1) Run terminal applications like vim, htop, nano, or less, (2) Automate CLI tools programmatically, (3) Send keyboard input to running applications, (4) Retrieve and parse terminal output, or (5) Control interactive programs like Claude CLI, Python REPL, or bash shells.
+---
 
-**COMPLETE, SELF-CONTAINED INSTRUCTIONS FOR RUNNING TERMINAL APPLICATIONS VIA TERM-WRAPPER API**
+# Term Wrapper
 
-Run any terminal application (TUI, CLI, or interactive program) through the term-wrapper HTTP API. This skill provides complete instructions for Claude to interact with terminal applications programmatically.
-
-## What This Skill Does
-
-Enables Claude to:
-- Launch terminal applications via HTTP API or CLI
-- Send keyboard input to running applications
-- Retrieve and parse terminal output
-- Interact with TUI applications like htop, vim, or any command-line tool
+Run any terminal application through the term-wrapper HTTP API or CLI commands. This enables programmatic control of TUI applications, automated CLI workflows, and interactive terminal sessions.
 
 ## ⚠️ IMPORTANT: Approach Priority
 
@@ -212,7 +207,7 @@ term-wrapper send $SESSION "i"
 sleep 0.3
 
 # Type the code (note: \n for newlines)
-term-wrapper send $SESSION "import math\n\n# Compute pi\npi = math.pi\nprint(f\"Pi = {pi}\")\n"
+term-wrapper send $SESSION "import math\\n\\n# Compute pi\\npi = math.pi\\nprint(f\\\"Pi = {pi}\\\")\\n"
 sleep 0.5
 
 # Exit insert mode (ESC), save and quit
@@ -234,7 +229,7 @@ term-wrapper send $SESSION "o"
 sleep 0.3
 
 # Add exp(1) code
-term-wrapper send $SESSION "\n# Compute e (Euler's number)\ne = math.exp(1)\nprint(f\"e = {e}\")\n"
+term-wrapper send $SESSION "\\n# Compute e (Euler's number)\\ne = math.exp(1)\\nprint(f\\\"e = {e}\\\")\\n"
 sleep 0.5
 
 # Exit insert mode, save and quit

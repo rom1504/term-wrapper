@@ -74,6 +74,6 @@ See the [CLI documentation](../README.md#cli-subcommands) for all available comm
 ## Tips
 
 - Use `claude_interactive.py` to see the new helper primitives in action
-- Check the skill documentation: `skills/term-wrapper.md`
+- Check the skill documentation: `skill/SKILL.md`
 - All examples use the new primitives: `wait_for_text()`, `wait_for_quiet()`, `get_text()`
 - For shell scripting, prefer CLI commands over Python for simplicity
