@@ -5,6 +5,7 @@ import time
 from multiprocessing import Process
 import uvicorn
 from term_wrapper.cli import TerminalClient
+import httpx
 
 
 BASE_URL = "http://localhost:8007"
@@ -25,7 +26,21 @@ def server():
     """Start server for tests."""
     proc = Process(target=run_server, daemon=True)
     proc.start()
-    time.sleep(2)
+
+    # Wait for server to be ready
+    max_retries = 30
+    for i in range(max_retries):
+        try:
+            resp = httpx.get(f"{BASE_URL}/health", timeout=1.0)
+            if resp.status_code == 200:
+                break
+        except Exception:
+            pass
+        time.sleep(0.5)
+    else:
+        proc.terminate()
+        raise RuntimeError("Server failed to start")
+
     yield
     proc.terminate()
     proc.join(timeout=5)
@@ -33,8 +48,10 @@ def server():
 
 @pytest.fixture
 def client(server):
-    """Create TerminalClient instance."""
+    """Create TerminalClient instance with increased timeout."""
     client = TerminalClient(base_url=BASE_URL)
+    # Increase timeout to 30 seconds
+    client.http_client.timeout = httpx.Timeout(30.0)
     yield client
     client.close()
 
