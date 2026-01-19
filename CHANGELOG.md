@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-01-19
+
+Patch release fixing WebSocket stability and test suite.
+
+### Fixed
+- WebSocket cancellation error when detaching from sessions
+  - Explicitly catch `asyncio.CancelledError` in WebSocket endpoint
+  - Prevents server crash when client presses Ctrl+C to detach
+  - Client disconnect now handled gracefully without disrupting event loop
+- Skipped Ink app.js test that depends on missing example file
+  - test_ink_app_via_http_endpoints now properly skipped
+  - All 18 integration tests (vim, htop, Python TUI) passing
+
 ## [0.4.1] - 2026-01-19
 
 Patch release fixing terminal rendering for TUI applications.
