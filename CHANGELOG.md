@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.3] - 2026-01-19
+
+Patch release improving command execution error handling and server stability.
+
+### Fixed
+- Command execution errors now handled gracefully
+  - Child process catches exec errors and exits cleanly
+  - Parent detects failed commands (non-zero exit) with clear error message
+  - Prevents server crash when command cannot be executed (exec format error)
+  - Helpful error message suggests wrapping command in shell
+- Server no longer crashes when spawning invalid commands
+
+### Changed
+- Commands that fail to start now raise RuntimeError with helpful message
+- Error message includes suggestions: wrap in `['bash', '-c', 'command']` if needed
+
 ## [0.4.2] - 2026-01-19
 
 Patch release fixing WebSocket stability and test suite.
