@@ -104,6 +104,27 @@ class TerminalClient:
         response.raise_for_status()
         return response.json()["output"]
 
+    def get_screen(self, session_id: str) -> dict:
+        """Get parsed terminal screen as 2D array.
+
+        This returns the terminal screen buffer processed through the
+        ScreenBuffer class, which handles ANSI escape sequences and
+        cursor positioning to produce clean, parseable text lines.
+
+        Args:
+            session_id: Session ID
+
+        Returns:
+            Dictionary with:
+                - lines: List of strings, one per screen row
+                - rows: Number of rows
+                - cols: Number of columns
+                - cursor: Current cursor position {row, col}
+        """
+        response = self.http_client.get(f"/sessions/{session_id}/screen")
+        response.raise_for_status()
+        return response.json()
+
     async def interactive_session(self, session_id: str) -> None:
         """Run an interactive session via WebSocket.
 

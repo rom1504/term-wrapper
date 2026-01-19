@@ -62,41 +62,67 @@ curl -X DELETE http://localhost:8000/sessions/{session_id}
 
 ## Complete Workflow Example
 
-### Example 1: Get Top Memory Processes
+### Example 1: Get Top 5 Memory Processes with htop
 
-**Problem**: htop output has complex ANSI codes that are hard to parse.
-**Solution**: Use `ps` with specific formatting for easier parsing.
+**Problem**: htop uses complex ANSI escape sequences and cursor positioning.
+**Solution**: Use the `/screen` endpoint which provides parsed 2D screen buffer.
 
 ```python
-import requests, re
-
-# Create session running ps
-resp = requests.post("http://localhost:8000/sessions", json={
-    "command": ["bash", "-c", "ps aux --sort=-%mem | head -10; sleep 5"],
-    "rows": 50,
-    "cols": 200
-})
-session_id = resp.json()['session_id']
-
-# Wait for command to complete
 import time
-time.sleep(2)
+from term_wrapper.cli import TerminalClient
 
-# Get output
-resp = requests.get(f"http://localhost:8000/sessions/{session_id}/output")
-output = resp.json().get('output', '')
+# Create client
+client = TerminalClient(base_url="http://localhost:8000")
 
-# Strip ANSI codes
-ansi = re.compile(r'\x1b[@-_][0-?]*[ -/]*[@-~]')
-clean = ansi.sub('', output)
+# Create htop session sorted by memory
+session_id = client.create_session(
+    command=["htop", "-C", "--sort-key=PERCENT_MEM"],
+    rows=40,
+    cols=150
+)
 
-# Parse ps output (already sorted by memory)
-lines = clean.strip().split('\n')
-for line in lines[1:6]:  # Top 5 processes
-    print(line)
+# Wait for htop to render
+time.sleep(2.5)
+
+# Get parsed screen buffer (NOT raw output)
+screen_data = client.get_screen(session_id)
+lines = screen_data['lines']
+
+# Find header line
+header_idx = None
+for i, line in enumerate(lines):
+    if "PID" in line and "MEM%" in line:
+        header_idx = i
+        break
+
+# Parse process lines
+processes = []
+for line in lines[header_idx + 1:]:
+    if not line.strip():
+        continue
+    parts = line.split()
+    if len(parts) >= 10:
+        try:
+            pid = int(parts[0])
+            user = parts[1]
+            mem = float(parts[9].rstrip('%'))
+            cmd = ' '.join(parts[10:]) if len(parts) > 10 else ''
+
+            if mem > 0:
+                processes.append({'pid': pid, 'user': user, 'mem': mem, 'cmd': cmd})
+        except (ValueError, IndexError):
+            continue
+
+# Get top 5
+top5 = sorted(processes, key=lambda x: x['mem'], reverse=True)[:5]
+
+# Display results
+for i, p in enumerate(top5, 1):
+    print(f"{i}. PID {p['pid']} | USER {p['user']} | MEM {p['mem']:.1f}% | {p['cmd'][:40]}")
 
 # Cleanup
-requests.delete(f"http://localhost:8000/sessions/{session_id}")
+client.delete_session(session_id)
+client.close()
 ```
 
 ### Example 2: Interactive vim Session
