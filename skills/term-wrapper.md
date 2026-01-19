@@ -225,11 +225,9 @@ uv run python -m term_wrapper.cli delete $SESSION
 cat /tmp/thepi.py
 ```
 
-### Example 3: Interactive Claude CLI - FULLY WORKING!
+### Example 3: Interactive Claude CLI
 
 **Use case**: Use Claude CLI interactively through term-wrapper to write and execute code.
-
-**STATUS: ✓ Interactive mode now works!** Term-wrapper's PTY provides proper raw mode support for Ink-based TUIs.
 
 This is the same example shown at the top of this document. See "Quick Example: Automate Claude Code" above for the complete CLI implementation.
 
