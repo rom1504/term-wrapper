@@ -1,0 +1,319 @@
+=== BUFFER CONTENT ANALYSIS ===
+Total lines: 303
+Viewport Y: 83
+Rows: 35
+
+=== ALL LINES ===
+L  0 [ 44]:                                             
+L  1 [ 44]:                                             
+L  2 [ 43]: ▐▛███▜▌   Claude Code v2.1.12              
+L  3 [ 44]:                                            ▝
+L  4 [ 43]: ▜█████▛▘  Sonnet 4.5 · Claude API          
+L  5 [ 44]:                                             
+L  6 [ 43]:  ▘▘ ▝▝    /tmp                             
+L  7 [ 44]:                                             
+L  8 [ 43]:                                            
+L  9 [ 44]:                                            ─
+L 10 [ 43]: ───────────────────────────────────────────
+L 11 [ 44]:                                            ❯
+L 12 [ 43]:  Try "how does <filepath> work?"           
+L 13 [ 44]: ❯ write a detailed 50 line explanation      
+L 14 [ 43]:   of how terminal emulators work,          
+L 15 [ 44]:   include technical details                 
+L 16 [ 44]:                                             
+L 17 [ 44]: · Herding… (ctrl+c to interrupt)            
+L 18 [ 44]:                                             
+L 19 [ 44]:                                            ─
+L 20 [ 43]: ───────────────────────────────────────────
+L 21 [ 44]: ● A terminal emulator is a program that    ❯
+L 22 [ 43]:   emulates a physical video terminal within
+L 23 [ 44]:   a graphical                               
+L 24 [ 43]:   environment,─providing─a─text-based──────
+L 25 [ 44]:   interface for interacting with the shell  
+L 26 [ 43]:  ?and other                                
+L 27 [ 44]:   command-line programs.                    
+L 28 [ 44]:                                             
+L 29 [ 43]:                                            
+L 30 [ 44]:                                             
+L 31 [ 43]:  Historical Context                        
+L 32 [ 44]:                                             
+L 33 [ 43]:                                            
+L 34 [ 44]:                                             
+L 35 [ 43]:  Terminal emulators originated from        
+L 36 [ 44]:                                             
+L 37 [ 43]:  physical terminals like the VT100, which  
+L 38 [ 44]:                                             
+L 39 [ 43]:  were hardware                             
+L 40 [ 44]:                                             
+L 41 [ 43]:  devices connected to mainframes. Modern   
+L 42 [ 44]:                                             
+L 43 [ 43]:  terminal emulators simulate these devices 
+L 44 [ 44]:                                             
+L 45 [ 43]:  in software,                              
+L 46 [ 44]:                                             
+L 47 [ 43]:  maintaining compatibility with programs   
+L 48 [ 44]:                                             
+L 49 [ 43]:  designed for physical terminals while     
+L 50 [ 44]:                                             
+L 51 [ 43]:  adding modern                             
+L 52 [ 44]:                                             
+L 53 [ 43]:  features.                                 
+L 54 [ 44]:                                             
+L 55 [ 43]:                                            
+L 56 [ 44]:                                             
+L 57 [ 43]:  Core Architecture                         
+L 58 [ 44]:                                             
+L 59 [ 43]:                                            
+L 60 [ 44]:                                             
+L 61 [ 43]:  At its core, a terminal emulator creates a
+L 62 [ 44]:                                             
+L 63 [ 43]:   pseudo-terminal (PTY) - a pair of virtual
+L 64 [ 44]:                                             
+L 65 [ 43]:   devices                                  
+L 66 [ 44]:                                             
+L 67 [ 43]:  that simulate a bidirectional             
+L 68 [ 44]:                                             
+L 69 [ 43]:  communication channel. The PTY consists of
+L 70 [ 44]:                                             
+L 71 [ 43]:   a master side                            
+L 72 [ 44]:                                             
+L 73 [ 43]:  (controlled by the terminal emulator) and 
+L 74 [ 44]:                                             
+L 75 [ 43]:  a slave side (connected to the shell      
+L 76 [ 44]:                                             
+L 77 [ 43]:  process).                                 
+L 78 [ 44]:                                             
+L 79 [ 43]:                                            
+L 80 [ 44]:                                             
+L 81 [ 43]:  When you launch a terminal emulator, it   
+L 82 [ 44]:                                             
+L 83 [ 43]:  forks a new process and executes a shell  
+L 84 [ 44]:                                             
+L 85 [ 43]:  (like bash                                
+L 86 [ 44]:                                             
+L 87 [ 43]:  or zsh) with its standard input, output,  
+L 88 [ 44]:                                             
+L 89 [ 43]:  and error streams connected to the slave  
+L 90 [ 44]:                                             
+L 91 [ 43]:  PTY. The                                  
+L 92 [ 44]:                                             
+L 93 [ 43]:  terminal emulator reads from and writes to
+L 94 [ 44]:                                             
+L 95 [ 43]:   the master PTY.                          
+L 96 [ 44]:                                             
+L 97 [ 43]:                                            
+L 98 [ 44]:                                             
+L 99 [ 43]:  Input Processing                          
+L100 [ 44]:                                             
+L101 [ 43]:                                            
+L102 [ 44]:                                             
+L103 [ 43]:  When you type on your keyboard, the       
+L104 [ 44]:                                             
+L105 [ 43]:  terminal emulator captures these events   
+L106 [ 44]:                                             
+L107 [ 43]:  from the windowing                        
+L108 [ 44]:                                             
+L109 [ 43]:  system (X11, Wayland, or native GUI       
+L110 [ 44]:                                             
+L111 [ 43]:  frameworks). It converts key presses into 
+L112 [ 44]:                                             
+L113 [ 43]:  byte sequences                            
+L114 [ 44]:                                             
+L115 [ 43]:  and writes them to the master PTY. Special
+L116 [ 44]:                                             
+L117 [ 43]:   keys like arrows generate ANSI escape    
+L118 [ 44]:                                             
+L119 [ 43]:  sequences                                 
+L120 [ 44]:                                             
+L121 [ 43]:  (e.g., arrow up sends "\e[A"). The slave  
+L122 [ 44]:                                             
+L123 [ 43]:  PTY receives these bytes, and the shell   
+L124 [ 44]:                                             
+L125 [ 43]:  reads them.                               
+L126 [ 44]:                                             
+L127 [ 43]:                                            
+L128 [ 44]:                                             
+L129 [ 43]:  Output Processing                         
+L130 [ 44]:                                             
+L131 [ 43]:                                            
+L132 [ 44]:                                             
+L133 [ 43]:  The shell and programs write output to    
+L134 [ 44]:                                             
+L135 [ 43]:  stdout/stderr, which flows through the    
+L136 [ 44]:                                             
+L137 [ 43]:  slave PTY to                              
+L138 [ 44]:                                             
+L139 [ 43]:  the master. The terminal emulator reads   
+L140 [ 44]:                                             
+L141 [ 43]:  this byte stream and interprets it. Plain 
+L142 [ 44]:                                             
+L143 [ 43]:  ASCII                                     
+L144 [ 44]:                                             
+L145 [ 43]:  characters are rendered as glyphs using a 
+L146 [ 44]:                                             
+L147 [ 43]:  font, but the stream also contains control
+L148 [ 44]:                                             
+L149 [ 43]:   codes.                                   
+L150 [ 44]:                                             
+L151 [ 43]:                                            
+L152 [ 44]:                                             
+L153 [ 43]:  ANSI Escape Sequences                     
+L154 [ 44]:                                             
+L155 [ 43]:                                            
+L156 [ 44]:                                             
+L157 [ 43]:  ANSI escape sequences are special byte    
+L158 [ 44]:                                             
+L159 [ 43]:  patterns starting with ESC (0x1B) that    
+L160 [ 44]:                                             
+L161 [ 43]:  control cursor                            
+L162 [ 44]:                                             
+L163 [ 43]:  movement, colors, and text formatting. For
+L164 [ 44]:                                             
+L165 [ 43]:   example, "\e[31m" sets text color to red,
+L166 [ 44]:                                             
+L167 [ 43]:   and                                      
+L168 [ 44]:                                             
+L169 [ 43]:  "\e[2J" clears the screen. The terminal   
+L170 [ 44]:                                             
+L171 [ 43]:  emulator maintains a parser state machine 
+L172 [ 44]:                                             
+L173 [ 43]:  to handle                                 
+L174 [ 44]:                                             
+L175 [ 43]:  these sequences correctly, even when they 
+L176 [ 44]:                                             
+L177 [ 43]:  arrive in fragments across multiple reads.
+L178 [ 44]:                                             
+L179 [ 43]:                                            
+L180 [ 44]:                                             
+L181 [ 43]:  Screen Buffer Management                  
+L182 [ 44]:                                             
+L183 [ 43]:                                            
+L184 [ 44]:                                             
+L185 [ 43]:  The terminal maintains a 2D character grid
+L186 [ 44]:                                             
+L187 [ 43]:   representing the screen, with each cell  
+L188 [ 44]:                                             
+L189 [ 43]:  storing                                   
+L190 [ 44]:                                             
+L191 [ 43]:  a character, foreground color, background 
+L192 [ 44]:                                             
+L193 [ 43]:  color, and attributes (bold, underline,   
+L194 [ 44]:                                             
+L195 [ 43]:  etc.). The                                
+L196 [ 44]:                                             
+L197 [ 43]:  cursor position is tracked as coordinates 
+L198 [ 44]:                                             
+L199 [ 43]:  in this grid. When the emulator receives  
+L200 [ 44]:                                             
+L201 [ 43]:  text, it                                  
+L202 [ 44]:                                             
+L203 [ 43]:  writes to the current cursor position and 
+L204 [ 44]:                                             
+L205 [ 43]:  advances it accordingly.                  
+L206 [ 44]:                                             
+L207 [ 43]:                                            
+L208 [ 44]:                                             
+L209 [ 43]:  Rendering                                 
+L210 [ 44]:                                             
+L211 [ 43]:                                            
+L212 [ 44]:                                             
+L213 [ 43]:  The terminal emulator renders this buffer 
+L214 [ 44]:                                             
+L215 [ 43]:  to the screen using graphics APIs (OpenGL,
+L216 [ 44]:                                             
+L217 [ 43]:   Skia,                                    
+L218 [ 44]:                                             
+L219 [ 43]:  native drawing). It converts each         
+L220 [ 44]:                                             
+L221 [ 43]:  character to a glyph using font rendering 
+L222 [ 44]:                                             
+L223 [ 43]:  libraries like                            
+L224 [ 44]:                                             
+L225 [ 43]:  FreeType or HarfBuzz, which handle complex
+L226 [ 44]:                                             
+L227 [ 43]:   text shaping for ligatures and Unicode.  
+L228 [ 44]:                                             
+L229 [ 43]:  Modern                                    
+L230 [ 44]:                                             
+L231 [ 43]:  terminals often use GPU acceleration for  
+L232 [ 44]:                                             
+L233 [ 43]:  smooth scrolling and fast rendering.      
+L234 [ 44]:                                             
+L235 [ 43]:                                            
+L236 [ 44]:                                             
+L237 [ 43]:  Process Management                        
+L238 [ 44]:                                             
+L239 [ 43]:                                            
+L240 [ 44]:                                             
+L241 [ 43]:  The terminal monitors the shell process   
+L242 [ 44]:                                             
+L243 [ 43]:  using signals. When the shell exits, the  
+L244 [ 44]:                                             
+L245 [ 43]:  terminal                                  
+L246 [ 44]:                                             
+L247 [ 43]:  receives SIGCHLD and can close the window 
+L248 [ 44]:                                             
+L249 [ 43]:  or spawn a new shell. The terminal also   
+L250 [ 44]:                                             
+L251 [ 43]:  handles                                   
+L252 [ 44]:                                             
+L253 [ 43]:  window resize events by sending SIGWINCH  
+L254 [ 44]:                                             
+L255 [ 43]:  to the shell and updating the PTY's window
+L256 [ 44]:                                             
+L257 [ 43]:   size                                     
+L258 [ 44]:                                             
+L259 [ 43]:  via ioctl() calls.                        
+L260 [ 44]:                                             
+L261 [ 43]:                                            
+L262 [ 44]:                                             
+L263 [ 43]:  Advanced Features                         
+L264 [ 44]:                                             
+L265 [ 43]:                                            
+L266 [ 44]:                                             
+L267 [ 43]:  Modern terminals support true color       
+L268 [ 44]:                                             
+L269 [ 43]:  (24-bit RGB), Unicode with wide characters
+L270 [ 44]:                                             
+L271 [ 43]:   and combining                            
+L272 [ 44]:                                             
+L273 [ 43]:  marks, scrollback buffers for history,    
+L274 [ 44]:                                             
+L275 [ 43]:  mouse tracking protocols, bracketed paste 
+L276 [ 44]:                                             
+L277 [ 43]:  mode to                                   
+L278 [ 44]:                                             
+L279 [ 43]:  prevent command injection, and hyperlinks 
+L280 [ 44]:                                             
+L281 [ 43]:  via OSC 8 sequences. Some terminals like  
+L282 [ 44]:                                             
+L283 [ 43]:  iTerm2                                    
+L284 [ 44]:                                             
+L285 [ 43]:  support inline images using proprietary   
+L286 [ 44]:                                             
+L287 [ 43]:  escape sequences.                         
+L288 [ 44]:                                             
+L289 [ 43]:                                            
+L290 [ 44]:                                            ✶
+L291 [ 43]:  Herding… (ctrl+c to interrupt)            
+L292 [ 44]:                                             
+L293 [ 43]:                                            
+L294 [ 44]:                                            ─
+L295 [ 43]: ───────────────────────────────────────────
+L296 [ 44]: ────────────────────────────────────────────
+L297 [ 43]: ❯                                          
+L298 [ 44]:                                            ─
+L299 [ 43]:   ? for shortcuts──────────────────────────
+L300 [ 44]:                                             
+L301 [ 44]:                                             
+L302 [  0]: 
+
+=== DUPLICATE DETECTION ===
+DUPLICATE: '───────────────────────────────────────────...'
+  First at line 10
+  Duplicate at line 20
+
+DUPLICATE: '───────────────────────────────────────────...'
+  First at line 10
+  Duplicate at line 295
+

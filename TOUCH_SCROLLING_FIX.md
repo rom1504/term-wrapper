@@ -127,14 +127,17 @@ This intercepts touch events BEFORE they reach xterm.js, allowing our custom scr
 ## Outstanding Issues
 
 1. **"Some repetition"** - User reported repeated content, especially "thoughts"
-   - Not reproduced in automated tests
-   - May be timing-related or specific to real device
-   - Needs investigation
+   - Not reproduced in automated tests (see `test_screencast/` folder)
+   - Comprehensive screencast analysis (303 lines, video recording) found NO content duplication
+   - Only UI separators appear multiple times (expected)
+   - May be timing-related or specific to real Xiaomi 13 device
+   - Needs real device testing to confirm
 
 2. **Real device testing**
    - Automated tests use Playwright with touch simulation
    - User has Xiaomi 13 Android - should test on actual device
    - May have device-specific behavior
+   - See `test_screencast/README.md` for screencast test details
 
 ## Summary
 
