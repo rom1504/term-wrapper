@@ -96,12 +96,13 @@ class TerminalApp {
             }
         });
 
-        // Handle touch events for mobile scrolling
-        const viewport = document.querySelector('.xterm-viewport');
-        if (viewport) {
-            viewport.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
-            viewport.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-            viewport.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: true });
+        // Custom touch scrolling for better mobile experience
+        // Attach to terminal container to intercept before xterm.js
+        const terminalContainer = document.getElementById('terminal-container');
+        if (terminalContainer) {
+            terminalContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
+            terminalContainer.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+            terminalContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: true });
         }
     }
 
@@ -365,7 +366,7 @@ class TerminalApp {
             const scrollAmount = Math.round(diff / 50 * 3);
 
             if (scrollAmount !== 0) {
-                this.term.scrollLines(-scrollAmount); // Negative because touch down = scroll up
+                this.term.scrollLines(scrollAmount); // Positive diff (finger down) = scroll down
                 this.scrollVelocity = scrollAmount;
             }
 
@@ -381,7 +382,7 @@ class TerminalApp {
 
             const momentumScroll = () => {
                 if (Math.abs(momentum) > 0.1) {
-                    this.term.scrollLines(-Math.round(momentum));
+                    this.term.scrollLines(Math.round(momentum));
                     momentum *= decay;
                     setTimeout(momentumScroll, 16); // ~60fps
                 }

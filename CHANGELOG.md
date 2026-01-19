@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-01-19
+
+Critical patch fixing mobile touch scrolling direction.
+
+### Fixed
+- **Mobile touch scrolling direction inverted**
+  - Touch swipe UP now correctly scrolls UP (shows earlier content)
+  - Touch swipe DOWN now correctly scrolls DOWN (shows later content)
+  - Bug was caused by double negation in scrollLines() call
+  - Momentum scrolling direction also fixed
+  - Touch handlers now attach to terminal-container instead of .xterm-viewport
+  - Prevents conflict with xterm.js built-in touch handling
+
+### Added
+- Comprehensive touch event testing script (`docs/examples/debug_touch_events.py`)
+  - Dispatches actual TouchEvent objects (not mouse events)
+  - Verifies touch handlers fire correctly
+  - Validates viewport changes in correct direction
+- Root cause analysis document (`TOUCH_SCROLLING_FIX.md`)
+  - Documents testing strategy issues
+  - Explains the math error causing inverted scrolling
+  - Provides verification approach for real touch events
+
+### Context
+Previous testing used mouse events and direct API calls, missing the actual touch handler bug.
+Real Android devices (like Xiaomi 13) experienced backwards scrolling - swiping up would
+scroll down instead. This is now fixed and verified with proper TouchEvent simulation.
+
 ## [0.6.0] - 2026-01-19
 
 Minor release with major mobile UX improvements and streamlined CLI workflow.
