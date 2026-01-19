@@ -84,27 +84,30 @@ Server will start on `http://localhost:8000`
 
 ```bash
 # Create a session
-SESSION=$(uv run python -m term_wrapper.cli create bash -c "cd /tmp && claude" | python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
+SESSION=$(term-wrapper create bash -c "cd /tmp && claude" | python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
 
 # Wait for text to appear
-uv run python -m term_wrapper.cli wait-text $SESSION "Welcome" --timeout 10
+term-wrapper wait-text $SESSION "Welcome" --timeout 10
 
 # Send input (supports \n, \r, \t, \x1b escape sequences)
-uv run python -m term_wrapper.cli send $SESSION "create hello.py\r"
+term-wrapper send $SESSION "create hello.py\r"
 
 # Get clean text output (ANSI codes stripped)
-uv run python -m term_wrapper.cli get-text $SESSION
+term-wrapper get-text $SESSION
 
 # Wait for output to stabilize
-uv run python -m term_wrapper.cli wait-quiet $SESSION --duration 2
+term-wrapper wait-quiet $SESSION --duration 2
 
 # Delete session
-uv run python -m term_wrapper.cli delete $SESSION
+term-wrapper delete $SESSION
 ```
 
 See all available subcommands:
 ```bash
-uv run python -m term_wrapper.cli --help
+term-wrapper --help
+```
+
+**Note**: In development with uv, prefix commands with `uv run`, e.g., `uv run term-wrapper --help
 ```
 
 #### Option B: Using Python Client Library

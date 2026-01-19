@@ -16,7 +16,7 @@ Enables Claude to:
 
 **ALWAYS use this priority order:**
 
-1. **CLI Subcommands (FIRST CHOICE)** - Use `uv run python -m term_wrapper.cli` commands
+1. **CLI Subcommands (FIRST CHOICE)** - Use `term-wrapper` commands
    - Simplest approach, works directly from bash
    - All examples below show CLI commands
    - **Use this unless it truly doesn't work**
@@ -37,6 +37,8 @@ Enables Claude to:
 
 **The easiest way to use term-wrapper is via CLI subcommands.** This requires no Python code and works directly from bash/shell scripts.
 
+**Note**: In development environments using uv, prefix all commands with `uv run`, e.g., `uv run term-wrapper --help`. After pip install, use `term-wrapper` directly.
+
 ### Quick Example: Automate Claude Code
 
 ```bash
@@ -44,29 +46,29 @@ Enables Claude to:
 # Create Claude session and make it create a file
 
 # Create session
-SESSION=$(uv run python -m term_wrapper.cli create bash -c "cd /tmp && claude" | \
+SESSION=$(term-wrapper create bash -c "cd /tmp && claude" | \
           python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
 
 # Wait for and accept trust prompt
-uv run python -m term_wrapper.cli wait-text $SESSION "Do you trust" --timeout 10
-uv run python -m term_wrapper.cli send $SESSION "\r"
+term-wrapper wait-text $SESSION "Do you trust" --timeout 10
+term-wrapper send $SESSION "\r"
 
 # Wait for main UI
-uv run python -m term_wrapper.cli wait-text $SESSION "Welcome" --timeout 10
+term-wrapper wait-text $SESSION "Welcome" --timeout 10
 
 # Submit request
-uv run python -m term_wrapper.cli send $SESSION "create hello.py\r"
+term-wrapper send $SESSION "create hello.py\r"
 
 # Wait a bit and check for approval UI
 sleep 5
-TEXT=$(uv run python -m term_wrapper.cli get-text $SESSION)
+TEXT=$(term-wrapper get-text $SESSION)
 if echo "$TEXT" | grep -qi "esc to cancel"; then
     sleep 2
-    uv run python -m term_wrapper.cli send $SESSION "\r"  # Approve
+    term-wrapper send $SESSION "\r"  # Approve
 fi
 
 # Cleanup
-uv run python -m term_wrapper.cli delete $SESSION
+term-wrapper delete $SESSION
 ```
 
 ### Available CLI Subcommands
@@ -176,20 +178,20 @@ curl -X DELETE http://localhost:8000/sessions/{session_id}
 # Get top memory processes from htop using CLI
 
 # Create htop session sorted by memory
-SESSION=$(uv run python -m term_wrapper.cli create --rows 40 --cols 150 htop -C --sort-key=PERCENT_MEM | \
+SESSION=$(term-wrapper create --rows 40 --cols 150 htop -C --sort-key=PERCENT_MEM | \
           python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
 
 # Wait for htop to render
 sleep 2.5
 
 # Get parsed screen buffer (clean 2D text array, no ANSI codes)
-uv run python -m term_wrapper.cli get-screen $SESSION
+term-wrapper get-screen $SESSION
 
 # The output is JSON with 'lines' array - parse it to extract process info
 # Look for the header line containing "PID" and "MEM%", then parse subsequent lines
 
 # Cleanup when done
-uv run python -m term_wrapper.cli delete $SESSION
+term-wrapper delete $SESSION
 ```
 
 ### Example 2: Create and Edit File with vim
@@ -201,46 +203,46 @@ uv run python -m term_wrapper.cli delete $SESSION
 # Create and edit a Python file with vim using CLI
 
 # Step 1: Create /tmp/thepi.py with vim
-SESSION=$(uv run python -m term_wrapper.cli create vim /tmp/thepi.py | \
+SESSION=$(term-wrapper create vim /tmp/thepi.py | \
           python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
 sleep 1
 
 # Enter insert mode and write code
-uv run python -m term_wrapper.cli send $SESSION "i"
+term-wrapper send $SESSION "i"
 sleep 0.3
 
 # Type the code (note: \n for newlines)
-uv run python -m term_wrapper.cli send $SESSION "import math\n\n# Compute pi\npi = math.pi\nprint(f\"Pi = {pi}\")\n"
+term-wrapper send $SESSION "import math\n\n# Compute pi\npi = math.pi\nprint(f\"Pi = {pi}\")\n"
 sleep 0.5
 
 # Exit insert mode (ESC), save and quit
-uv run python -m term_wrapper.cli send $SESSION "\x1b"
+term-wrapper send $SESSION "\x1b"
 sleep 0.3
-uv run python -m term_wrapper.cli send $SESSION ":wq\r"
+term-wrapper send $SESSION ":wq\r"
 sleep 0.5
-uv run python -m term_wrapper.cli delete $SESSION
+term-wrapper delete $SESSION
 
 # Step 2: Edit the file to add exp(1)
-SESSION=$(uv run python -m term_wrapper.cli create vim /tmp/thepi.py | \
+SESSION=$(term-wrapper create vim /tmp/thepi.py | \
           python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
 sleep 1
 
 # Go to end of file (G), open new line (o)
-uv run python -m term_wrapper.cli send $SESSION "G"
+term-wrapper send $SESSION "G"
 sleep 0.3
-uv run python -m term_wrapper.cli send $SESSION "o"
+term-wrapper send $SESSION "o"
 sleep 0.3
 
 # Add exp(1) code
-uv run python -m term_wrapper.cli send $SESSION "\n# Compute e (Euler's number)\ne = math.exp(1)\nprint(f\"e = {e}\")\n"
+term-wrapper send $SESSION "\n# Compute e (Euler's number)\ne = math.exp(1)\nprint(f\"e = {e}\")\n"
 sleep 0.5
 
 # Exit insert mode, save and quit
-uv run python -m term_wrapper.cli send $SESSION "\x1b"
+term-wrapper send $SESSION "\x1b"
 sleep 0.3
-uv run python -m term_wrapper.cli send $SESSION ":wq\r"
+term-wrapper send $SESSION ":wq\r"
 sleep 0.5
-uv run python -m term_wrapper.cli delete $SESSION
+term-wrapper delete $SESSION
 
 # Result: /tmp/thepi.py now computes both pi and e
 cat /tmp/thepi.py
