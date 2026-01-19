@@ -18,17 +18,6 @@ Launching a simple TUI application (interactive shell).
 python examples/simple_tui.py
 ```
 
-### `primitives_demo.py` ⭐ NEW
-Demonstrates all the new helper primitives for easier interactive control:
-- `get_text()` - Clean text extraction with ANSI stripping
-- `wait_for_text()` - Wait for specific text
-- `wait_for_quiet()` - Wait for output to stabilize
-- `get_new_lines()` - Incremental updates
-
-```bash
-python examples/primitives_demo.py
-```
-
 ## Application-Specific Examples
 
 ### `vim_example.py`
@@ -64,6 +53,6 @@ python examples/claude_interactive.py
 
 ## Tips
 
-- Use `primitives_demo.py` to learn the new helper methods
-- Use `claude_interactive.py` as template for interactive workflows
+- Use `claude_interactive.py` to see the new helper primitives in action
 - Check the skill documentation: `skills/term-wrapper.md`
+- All examples use the new primitives: `wait_for_text()`, `wait_for_quiet()`, `get_text()`

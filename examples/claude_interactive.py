@@ -1,40 +1,14 @@
 #!/usr/bin/env python3
-"""Working example: Interactive Claude CLI via term-wrapper.
+"""Interactive Claude CLI via term-wrapper using new primitives.
 
-This demonstrates the WORKING approach for using Claude CLI interactively
-through term-wrapper's PTY with raw mode support.
-
-Key requirements:
-1. Wait for UI elements to fully render before sending input
-2. Poll output to detect state changes instead of using fixed sleeps
-3. Handle multiple UI stages: trust prompt, code generation, approval
+This demonstrates using the new helper primitives for clean, readable code.
 """
 
-import time
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
 from term_wrapper.cli import TerminalClient
-
-
-def wait_for_condition(client, session_id, check_func, timeout=60, poll_interval=1):
-    """Poll screen output until condition is met or timeout.
-
-    Args:
-        client: TerminalClient instance
-        session_id: Session ID to poll
-        check_func: Function that takes screen dict and returns bool
-        timeout: Maximum seconds to wait
-        poll_interval: Seconds between polls
-
-    Returns:
-        (screen_dict, found_bool) tuple
-    """
-    start_time = time.time()
-    while time.time() - start_time < timeout:
-        screen = client.get_screen(session_id)
-        if check_func(screen):
-            return screen, True
-        time.sleep(poll_interval)
-    return screen, False
 
 
 def interactive_claude_request(work_dir: str, request: str) -> tuple[str, list[str]]:
@@ -45,11 +19,11 @@ def interactive_claude_request(work_dir: str, request: str) -> tuple[str, list[s
         request: Request string to send to Claude
 
     Returns:
-        Tuple of (final_screen_output, created_files)
+        Tuple of (final_text_output, created_files)
     """
     client = TerminalClient(base_url="http://localhost:8000")
 
-    print(f"[1/6] Creating Claude CLI session in {work_dir}...")
+    print(f"[1/5] Creating Claude CLI session in {work_dir}...")
     session_id = client.create_session(
         command=["bash", "-c", f"cd {work_dir} && claude"],
         rows=40,
@@ -57,72 +31,51 @@ def interactive_claude_request(work_dir: str, request: str) -> tuple[str, list[s
     )
 
     # Step 1: Handle trust prompt
-    print("[2/6] Waiting for trust prompt...")
-    screen, found = wait_for_condition(
-        client, session_id,
-        lambda s: any("Do you trust" in line for line in s['lines']),
-        timeout=10
-    )
+    print("[2/5] Waiting for trust prompt...")
+    client.wait_for_text(session_id, "Do you trust", timeout=10)
+    print("  ✓ Trust prompt appeared")
 
-    if found:
-        print("  ✓ Trust prompt detected")
-        time.sleep(1)  # Brief stabilization pause
-        client.write_input(session_id, "\r")
-
-        # Wait for main UI
-        print("  ✓ Waiting for main UI...")
-        screen, found = wait_for_condition(
-            client, session_id,
-            lambda s: any("Welcome" in line for line in s['lines']),
-            timeout=10
-        )
+    client.write_input(session_id, "\r")
+    client.wait_for_text(session_id, "Welcome", timeout=10)
+    print("  ✓ Main UI loaded")
 
     # Step 2: Submit request
-    print(f"[3/6] Typing request: '{request}'...")
+    print(f"[3/5] Submitting request: '{request}'...")
     client.write_input(session_id, request)
-    time.sleep(0.5)
-
-    print("  ✓ Pressing Enter to submit...")
     client.write_input(session_id, "\r")
 
     # Step 3: Wait for code generation
-    print("[4/6] Waiting for Claude to generate code...")
-    screen, found = wait_for_condition(
-        client, session_id,
-        lambda s: any("esc to cancel" in line.lower() or "tab to add" in line.lower() for line in s['lines']),
-        timeout=30,
-        poll_interval=2
+    print("[4/5] Waiting for Claude to generate code...")
+    client.wait_for_condition(
+        session_id,
+        lambda text: "esc to cancel" in text.lower() or "tab to add" in text.lower(),
+        timeout=30
     )
+    print("  ✓ Code approval UI appeared")
 
-    if found:
-        print("  ✓ Code approval UI appeared")
+    # Step 4: Approve code
+    print("[5/5] Approving code...")
+    client.wait_for_quiet(session_id, duration=2, timeout=10)  # Wait for UI to stabilize
+    client.write_input(session_id, "\r")
 
-        # Step 4: Approve code
-        print("[5/6] Waiting for UI to stabilize before approval...")
-        time.sleep(3)  # Critical: let UI fully render
-
-        print("  ✓ Pressing Enter to approve...")
-        client.write_input(session_id, "\r")
-
-        # Step 5: Wait for file creation
-        print("[6/6] Waiting for file creation...")
-        screen, found = wait_for_condition(
-            client, session_id,
-            lambda s: len([f for f in os.listdir(work_dir) if f.endswith('.py')]) > 0,
-            timeout=15,
-            poll_interval=1
-        )
+    # Wait for file creation
+    print("  → Waiting for file creation...")
+    client.wait_for_condition(
+        session_id,
+        lambda text: len([f for f in os.listdir(work_dir) if f.endswith('.py')]) > 0,
+        timeout=15
+    )
+    print("  ✓ File created!")
 
     # Get results
-    screen = client.get_screen(session_id)
-    screen_text = '\n'.join(screen['lines'])
+    final_text = client.get_text(session_id)
     files = [f for f in os.listdir(work_dir) if not f.startswith('.')]
 
     # Cleanup
     client.delete_session(session_id)
     client.close()
 
-    return screen_text, files
+    return final_text, files
 
 
 if __name__ == "__main__":
@@ -141,7 +94,7 @@ if __name__ == "__main__":
     print("Interactive Claude CLI Example")
     print("=" * 60)
 
-    screen, files = interactive_claude_request(work_dir, request)
+    text, files = interactive_claude_request(work_dir, request)
 
     print(f"\n✓ Files created: {files}")
 
