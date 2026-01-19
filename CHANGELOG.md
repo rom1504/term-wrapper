@@ -7,21 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-01-19
+
+Initial release.
+
 ### Added
 - PTY-based terminal emulator with full TUI application support
 - FastAPI backend with REST and WebSocket APIs
 - Session management for concurrent terminal sessions
-- Web frontend with xterm.js integration
-- Mobile support with touch controls
+- Web frontend with xterm.js integration and mobile support
 - Comprehensive test suite (unit, integration, e2e)
-- Vim integration tests (100% passing)
-- Claude CLI integration tests (100% passing)
+- Application integration tests: vim, htop, Claude CLI (100% passing)
 - Python CLI client for terminal interaction
 - GitHub Actions CI workflow
 - PyPI publishing workflow
-- Detailed application reports (vim, Claude CLI)
+- Detailed application reports and testing guide
 - Complete API documentation
-
-## [0.1.0] - TBD
-
-Initial release.
+- Examples (simple HTTP usage, vim automation, TUI demo)
