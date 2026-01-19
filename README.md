@@ -9,8 +9,9 @@ A full-featured terminal emulator with web backend that can run any TUI (Text Us
 - **PTY-based Terminal Emulation**: Full pseudo-terminal support for running terminal applications
 - **FastAPI Backend**: RESTful API and WebSocket endpoints for terminal control
 - **Session Management**: Create, manage, and control multiple terminal sessions
-- **Python CLI Client**: Interactive CLI for connecting to remote terminal sessions
-- **Comprehensive Tests**: Unit, integration, and end-to-end tests
+- **CLI Subcommands**: Scriptable terminal control from bash/shell without writing Python
+- **Python Client Library**: High-level primitives (wait_for_text, wait_for_quiet, get_text)
+- **Comprehensive Tests**: 117 tests covering unit, integration, and e2e scenarios
 
 ## What's Supported
 
@@ -79,13 +80,52 @@ Server will start on `http://localhost:8000`
 
 ### 3. Run a TUI App
 
-#### Option A: Using the CLI Client
+#### Option A: Using CLI Subcommands (Recommended)
 
 ```bash
-uv run python -m term_wrapper.cli python3 examples/simple_tui.py
+# Create a session
+SESSION=$(uv run python -m term_wrapper.cli create bash -c "cd /tmp && claude" | python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
+
+# Wait for text to appear
+uv run python -m term_wrapper.cli wait-text $SESSION "Welcome" --timeout 10
+
+# Send input (supports \n, \r, \t, \x1b escape sequences)
+uv run python -m term_wrapper.cli send $SESSION "create hello.py\r"
+
+# Get clean text output (ANSI codes stripped)
+uv run python -m term_wrapper.cli get-text $SESSION
+
+# Wait for output to stabilize
+uv run python -m term_wrapper.cli wait-quiet $SESSION --duration 2
+
+# Delete session
+uv run python -m term_wrapper.cli delete $SESSION
 ```
 
-#### Option B: Using HTTP API
+See all available subcommands:
+```bash
+uv run python -m term_wrapper.cli --help
+```
+
+#### Option B: Using Python Client Library
+
+```python
+from term_wrapper.cli import TerminalClient
+
+client = TerminalClient()
+session_id = client.create_session(command=["bash"], rows=40, cols=120)
+
+# High-level primitives
+client.wait_for_text(session_id, "Welcome", timeout=10)
+client.write_input(session_id, "ls -la\r")
+text = client.get_text(session_id)  # Clean text, ANSI stripped
+client.wait_for_quiet(session_id, duration=2)  # Wait for stability
+
+client.delete_session(session_id)
+client.close()
+```
+
+#### Option C: Using HTTP API Directly
 
 ```bash
 # Create a session
@@ -107,6 +147,94 @@ curl -X POST http://localhost:8000/sessions/{session_id}/input \
 curl -X DELETE http://localhost:8000/sessions/{session_id}
 ```
 
+## CLI Subcommands
+
+The CLI provides scriptable terminal control without writing Python code. All commands output JSON for easy parsing.
+
+### Available Subcommands
+
+```bash
+# Session Management
+term-wrapper create [--rows N] [--cols N] [--env JSON] COMMAND...
+term-wrapper list
+term-wrapper info SESSION_ID
+term-wrapper delete SESSION_ID
+
+# Input/Output
+term-wrapper send SESSION_ID TEXT           # Supports \n, \r, \t, \x1b
+term-wrapper get-output SESSION_ID          # Raw output with ANSI codes
+term-wrapper get-text SESSION_ID            # Clean text (ANSI stripped)
+term-wrapper get-screen SESSION_ID          # Parsed 2D screen buffer
+
+# Waiting Primitives
+term-wrapper wait-text SESSION_ID TEXT [--timeout SECS]
+term-wrapper wait-quiet SESSION_ID [--duration SECS] [--timeout SECS]
+
+# Interactive
+term-wrapper attach SESSION_ID              # WebSocket interactive mode
+```
+
+### Shell Script Example
+
+```bash
+#!/bin/bash
+# Automate vim file editing
+
+SESSION=$(uv run python -m term_wrapper.cli create vim myfile.txt | \
+          python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
+
+# Enter insert mode
+uv run python -m term_wrapper.cli send $SESSION "i"
+sleep 0.3
+
+# Type content
+uv run python -m term_wrapper.cli send $SESSION "Hello World\nLine 2"
+sleep 0.5
+
+# Save and quit (ESC + :wq)
+uv run python -m term_wrapper.cli send $SESSION "\x1b"
+uv run python -m term_wrapper.cli send $SESSION ":wq\r"
+sleep 0.5
+
+# Cleanup
+uv run python -m term_wrapper.cli delete $SESSION
+```
+
+See `examples/` directory for more examples with vim, htop, and Claude Code.
+
+## Python Client Library
+
+The `TerminalClient` class provides high-level primitives for terminal control:
+
+```python
+from term_wrapper.cli import TerminalClient
+
+client = TerminalClient(base_url="http://localhost:8000")
+
+# Session management
+session_id = client.create_session(command=["bash"], rows=40, cols=120)
+sessions = client.list_sessions()
+info = client.get_session_info(session_id)
+client.delete_session(session_id)
+
+# Input/Output
+client.write_input(session_id, "ls -la\r")
+output = client.get_output(session_id, clear=True)
+text = client.get_text(session_id, strip_ansi_codes=True)
+screen = client.get_screen(session_id)  # 2D screen buffer
+
+# Waiting primitives
+client.wait_for_text(session_id, "username:", timeout=10)
+client.wait_for_condition(session_id, lambda text: "done" in text, timeout=30)
+client.wait_for_quiet(session_id, duration=2.0, timeout=30)
+
+# Incremental reading
+new_lines = client.get_new_lines(session_id)
+client.mark_read(session_id)
+
+client.close()
+```
+
 ## API Reference
 
 ### REST Endpoints
@@ -117,7 +245,8 @@ curl -X DELETE http://localhost:8000/sessions/{session_id}
 - `DELETE /sessions/{id}` - Delete a session
 - `POST /sessions/{id}/input` - Send input to terminal
 - `POST /sessions/{id}/resize` - Resize terminal window
-- `GET /sessions/{id}/output` - Get terminal output
+- `GET /sessions/{id}/output` - Get raw terminal output
+- `GET /sessions/{id}/screen` - Get parsed 2D screen buffer (clean text)
 
 ### WebSocket Endpoint
 

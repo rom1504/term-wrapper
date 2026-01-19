@@ -7,12 +7,95 @@ Run any terminal application (TUI, CLI, or interactive program) through the term
 ## What This Skill Does
 
 Enables Claude to:
-- Launch terminal applications via HTTP API
+- Launch terminal applications via HTTP API or CLI
 - Send keyboard input to running applications
 - Retrieve and parse terminal output
 - Interact with TUI applications like htop, vim, or any command-line tool
 
-## Core API Operations
+## Recommended Approach: CLI Subcommands
+
+**The easiest way to use term-wrapper is via CLI subcommands.** This requires no Python code and works directly from bash/shell scripts.
+
+### Quick Example: Automate Claude Code
+
+```bash
+#!/bin/bash
+# Create Claude session and make it create a file
+
+# Create session
+SESSION=$(uv run python -m term_wrapper.cli create bash -c "cd /tmp && claude" | \
+          python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
+
+# Wait for and accept trust prompt
+uv run python -m term_wrapper.cli wait-text $SESSION "Do you trust" --timeout 10
+uv run python -m term_wrapper.cli send $SESSION "\r"
+
+# Wait for main UI
+uv run python -m term_wrapper.cli wait-text $SESSION "Welcome" --timeout 10
+
+# Submit request
+uv run python -m term_wrapper.cli send $SESSION "create hello.py\r"
+
+# Wait a bit and check for approval UI
+sleep 5
+TEXT=$(uv run python -m term_wrapper.cli get-text $SESSION)
+if echo "$TEXT" | grep -qi "esc to cancel"; then
+    sleep 2
+    uv run python -m term_wrapper.cli send $SESSION "\r"  # Approve
+fi
+
+# Cleanup
+uv run python -m term_wrapper.cli delete $SESSION
+```
+
+### Available CLI Subcommands
+
+```bash
+# Session Management
+term-wrapper create [--rows N] [--cols N] COMMAND...
+term-wrapper list
+term-wrapper info SESSION_ID
+term-wrapper delete SESSION_ID
+
+# Input/Output
+term-wrapper send SESSION_ID TEXT           # Supports \n, \r, \t, \x1b
+term-wrapper get-text SESSION_ID            # Clean text (ANSI stripped)
+term-wrapper get-output SESSION_ID          # Raw output with ANSI
+term-wrapper get-screen SESSION_ID          # 2D screen buffer (JSON)
+
+# Waiting Primitives
+term-wrapper wait-text SESSION_ID TEXT [--timeout SECS]
+term-wrapper wait-quiet SESSION_ID [--duration SECS]
+
+# Interactive
+term-wrapper attach SESSION_ID
+```
+
+**When to use CLI vs Python:**
+- Use **CLI subcommands** for simple automation, bash scripts, one-off tasks
+- Use **Python client** for complex logic, conditional flows, error handling
+
+## Alternative: Python Client Library
+
+For more complex interactions, use the Python client with high-level primitives:
+
+```python
+from term_wrapper.cli import TerminalClient
+
+client = TerminalClient()
+session_id = client.create_session(command=["bash"], rows=40, cols=120)
+
+# High-level primitives
+client.wait_for_text(session_id, "Welcome", timeout=10)
+client.write_input(session_id, "ls -la\r")
+text = client.get_text(session_id)  # Clean text
+client.wait_for_quiet(session_id, duration=2)  # Wait for stability
+
+client.delete_session(session_id)
+client.close()
+```
+
+## Core API Operations (Low-Level HTTP)
 
 ### 1. Check Server Health
 ```bash
