@@ -34,9 +34,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/rom1504/term_wrapper"
-Repository = "https://github.com/rom1504/term_wrapper"
-Issues = "https://github.com/rom1504/term_wrapper/issues"
+Homepage = "https://github.com/rom1504/term-wrapper"
+Repository = "https://github.com/rom1504/term-wrapper"
+Issues = "https://github.com/rom1504/term-wrapper/issues"
 
 [build-system]
 requires = ["hatchling"]

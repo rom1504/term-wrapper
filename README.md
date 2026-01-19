@@ -1,6 +1,6 @@
 # Terminal Wrapper
 
-[![CI](https://github.com/rom1504/term_wrapper/workflows/CI/badge.svg)](https://github.com/rom1504/term_wrapper/actions/workflows/ci.yml)
+[![CI](https://github.com/rom1504/term-wrapper/workflows/CI/badge.svg)](https://github.com/rom1504/term-wrapper/actions/workflows/ci.yml)
 
 A full-featured terminal emulator with web backend that can run any TUI (Text User Interface) application and control it via HTTP/WebSocket APIs.
 
