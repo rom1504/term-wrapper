@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-01-19
+
+Feature release adding web browser integration.
+
+### Added
+- `term-wrapper web SESSION_ID` command to open sessions in browser
+- One-command workflow to view terminal sessions in web UI
+- Frontend already supported `?session=SESSION_ID` parameter
+
+### Example
+```bash
+SESSION=$(term-wrapper create htop | python3 -c "import sys, json; print(json.load(sys.stdin)['session_id'])")
+term-wrapper web $SESSION  # Opens htop in browser
+```
+
 ## [0.3.1] - 2026-01-19
 
 Patch release fixing server startup for pip-installed packages.
