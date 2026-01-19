@@ -148,11 +148,11 @@ curl -X DELETE http://localhost:8000/sessions/{session_id}
 ### Example 1: Get Top 5 Memory Processes with htop
 
 **Problem**: htop uses complex ANSI escape sequences and cursor positioning.
-**Solution**: Use the CLI with `get-screen` to get parsed 2D screen buffer.
+**Solution**: Use the CLI with `get-screen` to get parsed 2D screen buffer, then parse it.
 
 ```bash
 #!/bin/bash
-# Get top 5 memory processes from htop using CLI
+# Get top memory processes from htop using CLI
 
 # Create htop session sorted by memory
 SESSION=$(uv run python -m term_wrapper.cli create --rows 40 --cols 150 htop -C --sort-key=PERCENT_MEM | \
@@ -161,53 +161,13 @@ SESSION=$(uv run python -m term_wrapper.cli create --rows 40 --cols 150 htop -C 
 # Wait for htop to render
 sleep 2.5
 
-# Get parsed screen buffer and extract process info
-SCREEN=$(uv run python -m term_wrapper.cli get-screen $SESSION)
+# Get parsed screen buffer (clean 2D text array, no ANSI codes)
+uv run python -m term_wrapper.cli get-screen $SESSION
 
-# Parse with Python to extract top 5
-echo "$SCREEN" | python3 << 'EOF'
-import sys
-import json
+# The output is JSON with 'lines' array - parse it to extract process info
+# Look for the header line containing "PID" and "MEM%", then parse subsequent lines
 
-data = json.load(sys.stdin)
-lines = data['lines']
-
-# Find header
-header_idx = None
-for i, line in enumerate(lines):
-    if "PID" in line and "MEM%" in line:
-        header_idx = i
-        break
-
-if header_idx is None:
-    sys.exit(1)
-
-# Parse processes
-processes = []
-for line in lines[header_idx + 1:]:
-    if not line.strip():
-        continue
-    parts = line.split()
-    if len(parts) >= 10:
-        try:
-            pid = int(parts[0])
-            user = parts[1]
-            mem = float(parts[9].rstrip('%'))
-            cmd = ' '.join(parts[10:]) if len(parts) > 10 else ''
-            if mem > 0:
-                processes.append({'pid': pid, 'user': user, 'mem': mem, 'cmd': cmd})
-        except (ValueError, IndexError):
-            continue
-
-# Get top 5
-top5 = sorted(processes, key=lambda x: x['mem'], reverse=True)[:5]
-
-# Display
-for i, p in enumerate(top5, 1):
-    print(f"{i}. PID {p['pid']} | USER {p['user']} | MEM {p['mem']:.1f}% | {p['cmd'][:40]}")
-EOF
-
-# Cleanup
+# Cleanup when done
 uv run python -m term_wrapper.cli delete $SESSION
 ```
 
