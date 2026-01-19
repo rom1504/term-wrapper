@@ -87,7 +87,7 @@ class Terminal:
             flags = fcntl.fcntl(self.master_fd, fcntl.F_GETFL)
             fcntl.fcntl(self.master_fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
 
-            # Check if child process started successfully
+            # Check if child process failed to start
             import time
             time.sleep(0.1)  # Give child a moment to start
             try:
@@ -108,6 +108,7 @@ class Terminal:
                             f"['bash', '-c', '{' '.join(command)}']"
                         )
                     # else: exit code 0 means command ran successfully and finished quickly
+                    # Let start_reading() handle it normally - don't mark as not running
             except ChildProcessError:
                 pass  # Child is still running, which is good
 

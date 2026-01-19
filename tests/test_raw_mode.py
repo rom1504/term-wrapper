@@ -12,7 +12,8 @@ def test_raw_mode_parameter_default():
     term = Terminal(rows=24, cols=80)
 
     # Should succeed without specifying raw_mode
-    term.spawn(["echo", "test"])
+    # Use sleep to keep process alive for testing (echo exits too fast)
+    term.spawn(["sleep", "1"])
     assert term.is_alive()
     term.kill()
 
@@ -22,7 +23,8 @@ def test_raw_mode_explicit_true():
     term = Terminal(rows=24, cols=80)
 
     # Explicitly enable raw mode
-    term.spawn(["echo", "test"], raw_mode=True)
+    # Use sleep to keep process alive for testing (echo exits too fast)
+    term.spawn(["sleep", "1"], raw_mode=True)
     assert term.is_alive()
     term.kill()
 
@@ -32,7 +34,8 @@ def test_raw_mode_explicit_false():
     term = Terminal(rows=24, cols=80)
 
     # Explicitly disable raw mode
-    term.spawn(["echo", "test"], raw_mode=False)
+    # Use sleep to keep process alive for testing (echo exits too fast)
+    term.spawn(["sleep", "1"], raw_mode=False)
     assert term.is_alive()
     term.kill()
 
