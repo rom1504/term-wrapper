@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-01-19
+
+Patch release fixing terminal rendering for TUI applications.
+
+### Fixed
+- Raw mode terminal settings for proper TUI rendering
+  - Removed ECHO and ICANON restoration after `tty.setraw()`
+  - Fixes Claude Code and other Ink-based apps appearing out of alignment
+  - Maintains pure raw mode for pixel-perfect TUI support
+- Verified working: htop, less, vim, Claude Code
+
 ## [0.4.0] - 2026-01-19
 
 Major release with server management improvements and frontend fixes.
