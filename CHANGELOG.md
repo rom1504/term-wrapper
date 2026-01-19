@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-01-19
+
+Major UX improvement release with auto-start functionality.
+
 ### Added
 - Auto-start server functionality in CLI client
   - Server automatically starts when running any `term-wrapper` command
@@ -14,11 +18,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Server picks an available port (port 0) automatically
   - Port saved to `~/.term-wrapper/port` for subsequent commands
   - Improved UX - single command to get started
+- ServerManager class for managing server lifecycle
 
 ### Changed
 - CLI now auto-discovers or starts server if `--url` not specified
 - README and skill documentation updated to reflect auto-start behavior
 - Web frontend documentation updated with auto-start instructions
+- CLI unit tests updated to properly mock ServerManager
+
+### Fixed
+- Connection refused error when running CLI after pip install (no manual server startup needed)
 
 ## [0.2.1] - 2026-01-19
 
