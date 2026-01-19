@@ -263,10 +263,9 @@ def filter_unsupported_ansi(data: bytes) -> bytes:
     # ESC[?2026l - Disable synchronized output
     text = re.sub(r'\x1b\[\?2026[hl]', '', text)
 
-    # Remove malformed cursor positioning sequences
-    # [<u appears frequently and breaks cursor positioning
-    # This is likely a corrupted ESC[...H or ESC[s/u sequence
-    text = re.sub(r'\[<u', '', text)
+    # Remove ESC[<u sequence which appears frequently and may cause rendering issues
+    # This is not a standard terminal escape sequence and xterm.js doesn't handle it
+    text = re.sub(r'\x1b\[<u', '', text)
 
     # Convert back to bytes
     return text.encode('utf-8', errors='replace')
@@ -291,7 +290,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
         """Send terminal output to WebSocket."""
         while True:
             try:
-                await asyncio.sleep(0.05)  # 50ms polling interval
+                await asyncio.sleep(0.001)  # 1ms polling interval for real-time updates
                 output = await session.get_output(clear=True)
                 if output:
                     # Filter unsupported ANSI sequences before sending

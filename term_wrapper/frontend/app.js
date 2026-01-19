@@ -89,6 +89,23 @@ class TerminalApp {
             }
         });
 
+        // Auto-scroll to bottom during content streaming to prevent duplicate status lines
+        // Claude Code writes multiple status lines as new lines (not updating in-place)
+        // so we need to keep viewport at bottom to show only the latest one
+        this.lastWriteTime = Date.now();
+        this.term.onWriteParsed(() => {
+            this.lastWriteTime = Date.now();
+
+            // If we're near the bottom (within 3 lines), auto-scroll to bottom
+            // This prevents old thinking indicators from staying visible
+            const buffer = this.term.buffer.active;
+            const distanceFromBottom = buffer.length - (buffer.viewportY + this.term.rows);
+
+            if (distanceFromBottom < 3) {
+                this.term.scrollToBottom();
+            }
+        });
+
         // Handle terminal resize
         this.term.onResize(({ rows, cols }) => {
             if (this.sessionId) {

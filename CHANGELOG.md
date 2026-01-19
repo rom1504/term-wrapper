@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-01-19
+
+Critical fix for thinking indicator duplication using auto-scroll and ANSI filtering.
+
+### Fixed
+- **Thinking indicator duplication fully resolved**
+  - Added auto-scroll to bottom during content streaming (onWriteParsed handler)
+  - Viewport now stays at bottom within 3 lines, showing only latest status line
+  - Matches native terminal behavior where old status lines scroll out of view
+  - Claude Code writes multiple status lines as new lines (not updating in-place)
+  - Previous fix (reducing scrollback) was insufficient
+
+- **ANSI sequence filtering improved**
+  - Filters out `ESC[<u` sequence (appears 60 times, non-standard)
+  - May have been interfering with cursor positioning in xterm.js
+  - Synchronized output mode (ESC[?2026h/l) already filtered in v0.6.2
+
+### Investigation
+- Deep ANSI sequence analysis revealed Claude Code uses NO cursor control
+  - No cursor save/restore, cursor positioning, or line clearing
+  - Uses simple line-by-line output with newlines
+  - Status line "updates" are actually new lines appended to buffer
+- Root cause: viewport not staying at bottom during streaming
+  - See `test_screencast/ROOT_CAUSE_ANALYSIS.md` for full investigation
+  - Frame-by-frame analysis in `test_screencast/DUPLICATION_FOUND.md`
+  - ANSI capture shows pattern: `[?25l[<u[?1004l[?2004l[?25h`
+
+### Changed
+- Reduced scrollback from 1000 to 500 lines for better mobile performance
+- WebSocket polling remains at 1ms for real-time updates
+
 ## [0.6.2] - 2026-01-19
 
 Critical patch fixing double scrollbar and thinking indicator duplication.
