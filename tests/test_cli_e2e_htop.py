@@ -62,7 +62,7 @@ def run_cli(args):
 def test_htop_get_screen(server):
     """Test getting htop screen buffer via CLI."""
     # Create htop session sorted by memory
-    result = run_cli(["create", "--rows", "40", "--cols", "150", "htop", "-C", "--sort-key=PERCENT_MEM"])
+    result = run_cli(["create", "--rows", "40", "--cols", "150", "--env", '{"TERM":"xterm-256color"}', "htop", "-C", "--sort-key=PERCENT_MEM"])
     assert result.returncode == 0
     session_id = json.loads(result.stdout)["session_id"]
 
@@ -99,7 +99,7 @@ def test_htop_get_screen(server):
 def test_htop_parse_processes(server):
     """Test parsing top memory processes from htop using CLI."""
     # Create htop session
-    result = run_cli(["create", "--rows", "40", "--cols", "150", "htop", "-C", "--sort-key=PERCENT_MEM"])
+    result = run_cli(["create", "--rows", "40", "--cols", "150", "--env", '{"TERM":"xterm-256color"}', "htop", "-C", "--sort-key=PERCENT_MEM"])
     assert result.returncode == 0
     session_id = json.loads(result.stdout)["session_id"]
 
@@ -170,7 +170,7 @@ def test_htop_parse_processes(server):
 def test_htop_wait_quiet(server):
     """Test wait-quiet with htop (expects timeout since htop constantly updates)."""
     # Create htop session
-    result = run_cli(["create", "htop"])
+    result = run_cli(["create", "--env", '{"TERM":"xterm-256color"}', "htop"])
     assert result.returncode == 0
     session_id = json.loads(result.stdout)["session_id"]
 
