@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.4] - 2026-01-19
+
+Patch release adding Enter button to mobile controls.
+
+### Fixed
+- Mobile keyboard Enter key functionality
+  - Added ENTER button to mobile virtual keyboard controls
+  - Button sends carriage return (`\r`) to terminal via WebSocket
+  - Positioned between TAB and ^C for easy access
+  - Resolves issue where mobile users had no way to execute commands
+
+### Added
+- Mobile keyboard debugging scripts
+  - `docs/examples/debug_mobile_keyboard.py` - Tests keyboard input on mobile viewport
+  - `docs/examples/test_mobile_enter.py` - Validates Enter button functionality
+  - Scripts use Playwright to simulate mobile devices (iPhone, etc.)
+
+### Context
+Mobile users previously had no way to press Enter because:
+- Mobile virtual keyboard buttons included ESC, TAB, ^C, ^D, and arrows but no Enter
+- Soft keyboard Enter might be hidden or unavailable depending on context
+- Users couldn't execute commands, making the terminal unusable on mobile
+
 ## [0.5.3] - 2026-01-19
 
 Patch release fixing Claude Code rendering duplication bug.
