@@ -247,11 +247,24 @@ files = os.listdir('/tmp/myproject')
 print(f"Created: {files}")
 ```
 
+**Why Piping Works (Technical Details):**
+
+Claude Code uses [Ink](https://github.com/vadimdemedes/ink) (React for CLIs) which requires raw TTY mode for interactive input. When you pipe stdin (`echo | claude`), Claude reads the entire input *before* Ink's TUI initializes, avoiding the raw mode requirement.
+
+**Interactive typing doesn't work** because Ink's `useInput` hook expects raw mode stdin, which term-wrapper's PTY doesn't satisfy the same way a real terminal does (see [Ink issue #166](https://github.com/vadimdemedes/ink/issues/166)).
+
 **Notes:**
-- `--dangerously-skip-permissions` bypasses all permission prompts
-- Piped input (`echo "..." | claude`) works for non-interactive requests
-- Wait times depend on task complexity (file creation: ~10s, complex tasks: ~30s+)
-- For interactive mode (seeing Claude think), use the web UI instead
+- Use `--dangerously-skip-permissions` to bypass permission prompts
+- Piped input reads before TUI starts, enabling non-interactive workflows
+- `-p` flag is for text output only (doesn't execute tasks)
+- Wait times: simple tasks ~10s, complex tasks ~30s+
+- For watching Claude's progress interactively, use the web UI
+
+**Sources:**
+- [Ink GitHub](https://github.com/vadimdemedes/ink)
+- [Claude Code Headless Docs](https://code.claude.com/docs/en/headless)
+- [Ink setRawMode TTY issue](https://github.com/vadimdemedes/ink/issues/166)
+- [Claude Code stdin pipe issues](https://github.com/anthropics/claude-code/issues/5925)
 
 ## Parsing Output
 
