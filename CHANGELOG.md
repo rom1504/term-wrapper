@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.4] - 2026-01-20
+
+**Android Testing Infrastructure and Workflow Improvements**
+
+### Added
+- **Android Emulator Testing**
+  - Full Android 13 emulator setup automation (`docs/testing/setup_android_emulator.sh`)
+  - Multiple Android test approaches (CDP, ADB, visual verification)
+  - Test scripts for vim (alternate buffer) and Claude Code
+  - Comprehensive testing documentation in `docs/testing/`
+
+- **Testing Documentation**
+  - `docs/testing/ANDROID_TESTING.md` - Complete emulator setup guide
+  - `docs/testing/TEST_ON_REAL_DEVICE.md` - Physical device testing instructions
+  - `docs/testing/ANDROID_TEST_RESULTS.md` - Detailed test results
+  - `docs/testing/COMPREHENSIVE_TEST_SUMMARY.md` - Analysis of test coverage
+  - `docs/testing/README.md` - Testing overview and quick reference
+
+### Fixed
+- **CI/CD Improvements**
+  - Fixed publish workflow to only trigger on version tags (`v*`)
+  - Added JavaScript tests to CI pipeline (56 tests)
+  - Added Node.js setup in CI workflow
+
+### Changed
+- Moved analysis frame screenshots to `test_screencast/` directory
+- Reorganized testing documentation into `docs/testing/` structure
+
+### Tested
+- ✅ Normal buffer scrolling (bash, seq): Viewport scrolls 82→72
+- ✅ Alternate buffer scrolling (vim): Arrow keys sent (10 keys)
+- ✅ All 56 JavaScript tests passing
+- ❓ Claude Code conversation mode: Requires manual testing on real device
+
 ## [0.7.3] - 2026-01-20
 
 **CRITICAL BUG FIX: Touch scrolling now works correctly on mobile devices**
