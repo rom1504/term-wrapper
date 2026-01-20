@@ -175,6 +175,11 @@ button:disabled {
     pointer-events: none !important;
 }
 
+.xterm-screen {
+    /* CRITICAL: Disable touch handling on xterm-screen where xterm.js registers Gesture handlers */
+    touch-action: none !important;
+}
+
 /* Mobile controls */
 #mobile-controls {
     display: none;

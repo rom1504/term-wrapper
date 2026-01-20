@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.9] - 2026-01-20
+
+**CRITICAL FIX: Continuous touch scrolling now ACTUALLY works!**
+
+After deep research into xterm.js source code, discovered the root cause: xterm.js's own Gesture system was interfering with our custom touch handlers.
+
+### Fixed
+- **Event capture phase interception** - CRITICAL breakthrough
+  - Added `capture: true` to all touch event listeners
+  - This intercepts events BEFORE xterm.js's Gesture system receives them
+  - xterm.js registers touch handlers on `.xterm-screen` that were blocking our implementation
+
+- **stopPropagation() calls added**
+  - Now calling `e.stopPropagation()` on all touch events (start, move, end)
+  - Prevents xterm.js's Gesture.handleTouchMove from interfering
+  - Combined with preventDefault() for complete control
+
+- **Additional CSS touch-action on .xterm-screen**
+  - Added `touch-action: none` to `.xterm-screen` element
+  - xterm.js registers Gesture handlers on this element specifically
+  - Complements existing touch-action: none on viewport and container
+
+### Root Cause Analysis
+Research of xterm.js source code revealed:
+- xterm.js uses VS Code's Gesture system (`Viewport.ts`: `Gesture.addTarget(screenElement)`)
+- Gesture system registers touch handlers with `passive: false` on `.xterm-screen`
+- These handlers call `preventDefault()` and `stopPropagation()`, blocking descendant handlers
+- Solution: Use capture phase (`capture: true`) to intercept events BEFORE xterm.js
+
+### Research References
+- [xterm.js Viewport.ts](https://github.com/xtermjs/xterm.js/blob/master/src/browser/Viewport.ts)
+- [VS Code touch.ts](https://github.com/microsoft/vscode/blob/main/src/vs/base/browser/touch.ts)
+- [Issue #5377: Limited touch support](https://github.com/xtermjs/xterm.js/issues/5377)
+- [Issue #594: Ballistic scrolling via touch](https://github.com/xtermjs/xterm.js/issues/594)
+
 ## [0.6.8] - 2026-01-20
 
 ### Fixed

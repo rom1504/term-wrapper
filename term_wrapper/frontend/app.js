@@ -132,13 +132,23 @@ class TerminalApp {
         });
 
         // Custom touch scrolling for better mobile experience
-        // Attach to terminal container to intercept before xterm.js
-        // All events must be non-passive to allow preventDefault() to work
+        // CRITICAL: Use capture phase to intercept BEFORE xterm.js's Gesture system
+        // xterm.js registers its own touch handlers that interfere with custom scrolling
+        // We must use capture: true to intercept touch events first
         const terminalContainer = document.getElementById('terminal-container');
         if (terminalContainer) {
-            terminalContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
-            terminalContainer.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-            terminalContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
+            terminalContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), {
+                passive: false,
+                capture: true  // Intercept in capture phase before xterm.js
+            });
+            terminalContainer.addEventListener('touchmove', this.handleTouchMove.bind(this), {
+                passive: false,
+                capture: true  // Intercept in capture phase before xterm.js
+            });
+            terminalContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), {
+                passive: false,
+                capture: true  // Intercept in capture phase before xterm.js
+            });
         }
     }
 
@@ -380,6 +390,10 @@ class TerminalApp {
 
     // Touch handling for mobile scrolling
     handleTouchStart(e) {
+        // CRITICAL: Stop propagation to prevent xterm.js's Gesture system from interfering
+        e.preventDefault();
+        e.stopPropagation();
+
         this.touchStartY = e.touches[0].clientY;
         this.lastTouchY = e.touches[0].clientY;
         this.isScrolling = false;
@@ -394,9 +408,10 @@ class TerminalApp {
         const diff = touchY - this.lastTouchY;
         const totalDiff = touchY - this.touchStartY;
 
-        // Always prevent default to ensure browser doesn't handle scrolling
-        // (combined with touch-action: none in CSS for maximum compatibility)
+        // CRITICAL: Stop both default behavior AND propagation to block xterm.js's Gesture system
+        // (combined with touch-action: none in CSS and capture: true for maximum compatibility)
         e.preventDefault();
+        e.stopPropagation();
 
         // Detect if user is scrolling (not typing)
         if (Math.abs(totalDiff) > 10) {
@@ -434,6 +449,10 @@ class TerminalApp {
     }
 
     handleTouchEnd(e) {
+        // CRITICAL: Stop propagation to prevent xterm.js's Gesture system from interfering
+        e.preventDefault();
+        e.stopPropagation();
+
         // Apply momentum scrolling if velocity is high enough
         if (Math.abs(this.scrollVelocity) > 1) {
             let momentum = this.scrollVelocity;
