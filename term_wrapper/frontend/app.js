@@ -394,57 +394,45 @@ class TerminalApp {
         e.preventDefault();
         e.stopPropagation();
 
+        console.log('[TouchDebug] touchstart fired');
+
+        // Get viewport element for direct scrolling
+        this.viewportElement = document.querySelector('.xterm-viewport');
+
         this.touchStartY = e.touches[0].clientY;
         this.lastTouchY = e.touches[0].clientY;
         this.isScrolling = false;
         this.scrollVelocity = 0;
-        this.scrollAccumulator = 0;  // Accumulate fractional scroll amounts
+
+        // Store initial scroll position
+        if (this.viewportElement) {
+            this.initialScrollTop = this.viewportElement.scrollTop;
+            console.log('[TouchDebug] Initial scrollTop:', this.initialScrollTop);
+        }
     }
 
     handleTouchMove(e) {
-        if (!this.touchStartY) return;
-
-        const touchY = e.touches[0].clientY;
-        const diff = touchY - this.lastTouchY;
-        const totalDiff = touchY - this.touchStartY;
+        if (!this.touchStartY || !this.viewportElement) return;
 
         // CRITICAL: Stop both default behavior AND propagation to block xterm.js's Gesture system
         // (combined with touch-action: none in CSS and capture: true for maximum compatibility)
         e.preventDefault();
         e.stopPropagation();
 
-        // Detect if user is scrolling (not typing)
-        if (Math.abs(totalDiff) > 10) {
-            this.isScrolling = true;
+        const touchY = e.touches[0].clientY;
+        const totalDiff = this.touchStartY - touchY;  // Positive = scroll down, negative = scroll up
 
-            // Variable speed based on swipe velocity for natural feel
-            const velocity = Math.abs(diff);
-            let multiplier;
-            if (velocity > 15) {
-                multiplier = 12;  // Very fast swipe = 12 lines per 50px
-            } else if (velocity > 8) {
-                multiplier = 8;   // Fast swipe = 8 lines per 50px
-            } else {
-                multiplier = 5;   // Slow swipe = 5 lines per 50px (still faster than old 3)
-            }
+        console.log('[TouchDebug] touchmove - totalDiff:', totalDiff);
 
-            // Accumulate fractional scroll amounts for smooth continuous scrolling
-            // This allows slow continuous dragging to work (otherwise small diffs round to 0)
-            this.scrollAccumulator += (diff / 50 * multiplier);
+        // Directly set viewport scrollTop for smooth continuous scrolling
+        // No threshold, no accumulator - just direct 1:1 mapping
+        this.viewportElement.scrollTop = this.initialScrollTop + totalDiff;
 
-            // Only scroll when we've accumulated at least 1 line
-            const scrollAmount = Math.floor(Math.abs(this.scrollAccumulator));
-            if (scrollAmount >= 1) {
-                const direction = this.scrollAccumulator > 0 ? 1 : -1;
-                this.term.scrollLines(scrollAmount * direction);
-                this.scrollVelocity = scrollAmount * direction;
+        console.log('[TouchDebug] Set scrollTop to:', this.viewportElement.scrollTop);
 
-                // Keep the fractional remainder
-                this.scrollAccumulator -= scrollAmount * direction;
-            }
-        }
-
-        // Always update lastTouchY for next frame
+        // Track velocity for momentum scrolling
+        const frameDiff = touchY - this.lastTouchY;
+        this.scrollVelocity = -frameDiff;  // Negative because scrolling down moves finger up
         this.lastTouchY = touchY;
     }
 
@@ -453,20 +441,22 @@ class TerminalApp {
         e.preventDefault();
         e.stopPropagation();
 
+        console.log('[TouchDebug] touchend fired, velocity:', this.scrollVelocity);
+
         // Apply momentum scrolling if velocity is high enough
-        if (Math.abs(this.scrollVelocity) > 1) {
+        if (this.viewportElement && Math.abs(this.scrollVelocity) > 2) {
             let momentum = this.scrollVelocity;
-            const decay = 0.9;
+            const decay = 0.92;
 
             const momentumScroll = () => {
-                if (Math.abs(momentum) > 0.1) {
-                    this.term.scrollLines(Math.round(momentum));
+                if (Math.abs(momentum) > 0.5) {
+                    this.viewportElement.scrollTop += momentum;
                     momentum *= decay;
-                    setTimeout(momentumScroll, 16); // ~60fps
+                    requestAnimationFrame(momentumScroll);
                 }
             };
 
-            momentumScroll();
+            requestAnimationFrame(momentumScroll);
         }
 
         this.touchStartY = 0;

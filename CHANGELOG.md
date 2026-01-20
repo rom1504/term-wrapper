@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.10] - 2026-01-20
+
+**CRITICAL FIX: Found the real blocker - pointer-events: none was killing ALL touch interactions**
+
+After user testing v0.6.9 failed, discovered `pointer-events: none` on `.xterm-viewport` was blocking all touch events from reaching our handlers.
+
+### Fixed
+- **Removed pointer-events: none from .xterm-viewport** - THE KEY BLOCKER
+  - This CSS property was preventing ALL pointer/touch events from reaching the viewport
+  - Our touch handlers never fired because events were blocked at CSS level
+  - Now touch events can reach our handlers properly
+
+- **Direct viewport scrolling** - Simpler, more reliable approach
+  - Changed from `term.scrollLines()` API to direct `viewport.scrollTop` manipulation
+  - Direct 1:1 mapping: finger movement = scroll position (no accumulators, no thresholds)
+  - Much simpler logic that should work reliably
+
+- **Added debug logging** - For troubleshooting
+  - Console logs show when touch events fire
+  - Logs scroll positions and deltas for debugging
+  - Can be removed once confirmed working
+
+### Technical Changes
+- `handleTouchMove` now directly sets `viewport.scrollTop = initialScrollTop + fingerDelta`
+- No more complex accumulator logic or term.scrollLines() calls
+- Momentum scrolling uses `requestAnimationFrame` instead of `setTimeout`
+- Simpler, more direct, more reliable
+
 ## [0.6.9] - 2026-01-20
 
 **CRITICAL FIX: Continuous touch scrolling now ACTUALLY works!**
