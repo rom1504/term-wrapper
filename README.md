@@ -4,6 +4,14 @@
 
 A full-featured terminal emulator with web backend that can run any TUI (Text User Interface) application and control it via HTTP/WebSocket APIs.
 
+## Recent Updates
+
+**v0.7.3 (2026-01-20)** - 🎉 **Mobile touch scrolling now works!** Fixed critical bug preventing touch gestures from scrolling on mobile devices. Verified on Android 13 emulator. All 56 JavaScript tests passing.
+
+**v0.7.2 (2026-01-20)** - Added comprehensive JavaScript testing infrastructure with Jest. 56 tests covering unit tests, integration tests, and mobile emulation.
+
+See [CHANGELOG.md](CHANGELOG.md) for complete release history.
+
 ## Features
 
 - **PTY-based Terminal Emulation**: Full pseudo-terminal support for running terminal applications
@@ -32,7 +40,7 @@ A full-featured terminal emulator with web backend that can run any TUI (Text Us
 The included web frontend (`frontend/`) serves as a **universal web mirror** for any TUI application:
 - Access any terminal app through your browser with full rendering
 - Built with [xterm.js](https://xtermjs.org/) for complete ANSI escape sequence support
-- Mobile-friendly interface for running TUI apps on phones/tablets
+- **Mobile-friendly with touch scrolling** - Run TUI apps on phones/tablets with natural swipe gestures (v0.7.3+)
 - Not required - the REST/CLI API works standalone for programmatic control
 
 <p align="center">
