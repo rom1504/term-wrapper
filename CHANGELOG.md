@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.11] - 2026-01-20
+
+**SECURITY FIX: Server now listens on localhost only by default**
+
+### Security
+- **Changed default host from 0.0.0.0 to 127.0.0.1** - CRITICAL security fix
+  - Previously server was accessible from any network interface (0.0.0.0)
+  - This exposed the terminal to other machines on the network
+  - Now binds to localhost (127.0.0.1) only by default
+  - Users can still use --host 0.0.0.0 if they explicitly need network access
+
+### Changed
+- Updated help text to clarify security implications of --host flag
+- Display "localhost" in startup message instead of 127.0.0.1 for better UX
+
 ## [0.6.10] - 2026-01-20
 
 **CRITICAL FIX: Found the real blocker - pointer-events: none was killing ALL touch interactions**
