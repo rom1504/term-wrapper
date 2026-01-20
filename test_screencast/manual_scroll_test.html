@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manual Scroll Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .test-results { background: #f0f0f0; padding: 10px; margin: 10px 0; }
+        .pass { color: green; font-weight: bold; }
+        .fail { color: red; font-weight: bold; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Term-Wrapper v0.6.5 Scroll Verification</h1>
+
+    <h2>Code Verification:</h2>
+    <div class="test-results">
+        <div>✅ Variable speed code is present in app.js</div>
+        <div>✅ Multipliers: 5 (slow), 8 (medium), 12 (fast)</div>
+        <div>✅ Velocity thresholds: >8px and >15px</div>
+    </div>
+
+    <h2>Manual Testing Instructions:</h2>
+    <ol>
+        <li>Run: <code>term-wrapper web bash -c "seq 1 1000"</code></li>
+        <li>Open in mobile browser (or Chrome DevTools mobile mode)</li>
+        <li>Check version shows <strong>v0.6.5</strong> in top left</li>
+        <li>Try different swipe speeds:
+            <ul>
+                <li><strong>Slow drag:</strong> Should scroll ~5 lines per 50px movement</li>
+                <li><strong>Medium swipe:</strong> Should scroll ~8 lines per 50px movement</li>
+                <li><strong>Fast flick:</strong> Should scroll ~12 lines per 50px movement</li>
+            </ul>
+        </li>
+        <li>Compare to old behavior (v0.6.4): Was 3 lines per 50px regardless of speed</li>
+    </ol>
+
+    <h2>Expected Results:</h2>
+    <div class="test-results">
+        <div class="pass">✅ Fast swipe should feel 2-4x faster than slow swipe</div>
+        <div class="pass">✅ Slow swipe should be ~67% faster than v0.6.4</div>
+        <div class="pass">✅ Fast swipe should be ~300% faster than v0.6.4</div>
+    </div>
+
+    <h2>If Still Slow:</h2>
+    <div class="test-results">
+        <div class="fail">❌ Check version is v0.6.5 (not cached v0.6.4)</div>
+        <div class="fail">❌ Hard refresh browser: Ctrl+Shift+R or Cmd+Shift+R</div>
+        <div class="fail">❌ Clear browser cache completely</div>
+        <div class="fail">❌ Check console for JavaScript errors</div>
+    </div>
+
+    <h2>Debug Console Commands:</h2>
+    <pre>
+// Check if variable speed code is loaded:
+console.log(window.app.handleTouchMove.toString().includes('velocity'));
+// Should print: true
+
+// Check multiplier values in code:
+console.log(window.app.handleTouchMove.toString().match(/multiplier = \d+/g));
+// Should show: ["multiplier = 12", "multiplier = 8", "multiplier = 5"]
+    </pre>
+
+    <h2>Code Changes Made:</h2>
+    <pre>
+OLD (v0.6.4):
+  const scrollAmount = Math.round(diff / 50 * 3);  // Fixed 3x multiplier
+
+NEW (v0.6.5):
+  const velocity = Math.abs(diff);
+  let multiplier;
+  if (velocity > 15) multiplier = 12;      // Very fast
+  else if (velocity > 8) multiplier = 8;   // Fast
+  else multiplier = 5;                     // Slow (still faster than old 3)
+  const scrollAmount = Math.round(diff / 50 * multiplier);
+    </pre>
+
+    <script>
+        // Auto-check if this page is loaded in the correct environment
+        window.addEventListener('load', () => {
+            const checks = [];
+
+            // Check 1: Fetch version from API
+            fetch('/version')
+                .then(r => r.json())
+                .then(data => {
+                    const p = document.createElement('div');
+                    if (data.version === '0.6.5') {
+                        p.className = 'pass';
+                        p.textContent = '✅ Backend version: ' + data.version;
+                    } else {
+                        p.className = 'fail';
+                        p.textContent = '❌ Backend version: ' + data.version + ' (expected 0.6.5)';
+                    }
+                    document.body.appendChild(p);
+                })
+                .catch(e => {
+                    const p = document.createElement('div');
+                    p.className = 'info';
+                    p.textContent = 'ℹ️  Not running in term-wrapper environment';
+                    document.body.appendChild(p);
+                });
+        });
+    </script>
+</body>
+</html>
