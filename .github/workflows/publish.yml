@@ -2,11 +2,11 @@ name: Publish to PyPI
 
 on:
   push:
-    branches: [ main, master ]
+    tags:
+      - 'v*'
 
 jobs:
   publish:
-    if: "startsWith(github.event.head_commit.message, 'Release')"
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -35,20 +35,3 @@ jobs:
       run: |
         uv tool install twine
         uv tool run twine upload dist/*
-
-    - name: Extract version from commit
-      id: get_version
-      run: |
-        VERSION=$(echo "${{ github.event.head_commit.message }}" | grep -oP '^Release \K[^ ]+')
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-    - name: Create GitHub Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.get_version.outputs.version }}
-        release_name: Release ${{ steps.get_version.outputs.version }}
-        body: ${{ github.event.head_commit.message }}
-        draft: false
-        prerelease: false
