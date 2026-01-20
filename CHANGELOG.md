@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.5] - 2026-01-20
+
+**Critical Fix: Continuous Touch Scrolling**
+
+### Fixed
+- **Touch Scrolling Bug** - Fixed continuous drag scrolling on mobile devices
+  - Previously: Drag and hold would scroll one tick then stop
+  - Now: Smooth continuous scrolling during drag gestures
+  - Implementation: Added accumulated delta tracking to handle small touchmove deltas
+  - Each touchmove event now accumulates properly for smooth 60fps scrolling
+  - Verified with realistic touch simulation (40 touchmoves with 9px deltas at 60fps)
+
+### Technical Details
+- Introduced `accumulatedDelta` to track unscrolled movement between touchmove events
+- Small deltas (<20px) now accumulate correctly until threshold is reached
+- Consumed delta is subtracted after each scroll action (20px per line)
+- Always updates `lastTouchY` to ensure proper incremental tracking
+
 ## [0.7.4] - 2026-01-20
 
 **Android Testing Infrastructure and Workflow Improvements**

@@ -469,6 +469,7 @@ class TerminalApp {
         this.touchStartY = e.touches[0].clientY;
         this.lastTouchY = e.touches[0].clientY;
         this.touchScrollSent = 0; // Track how many arrow keys sent
+        this.accumulatedDelta = 0; // Accumulate small deltas for smooth scrolling
     }
 
     handleTouchMove(e) {
@@ -489,10 +490,13 @@ class TerminalApp {
             return;
         }
 
-        console.log('[TouchDebug] touchmove - buffer:', buffer.type, 'deltaY:', deltaY, 'total:', totalDelta);
+        // Accumulate delta for smooth continuous scrolling
+        this.accumulatedDelta += deltaY;
 
-        // Determine scroll action based on buffer type
-        const scrollAction = determineScrollAction(buffer, deltaY, 'touch');
+        console.log('[TouchDebug] touchmove - buffer:', buffer.type, 'deltaY:', deltaY, 'accumulated:', this.accumulatedDelta.toFixed(1), 'total:', totalDelta);
+
+        // Determine scroll action based on accumulated delta
+        const scrollAction = determineScrollAction(buffer, this.accumulatedDelta, 'touch');
 
         if (scrollAction.action === 'arrow-keys') {
             // Send arrow keys to PTY
@@ -504,13 +508,22 @@ class TerminalApp {
                 }
             }
             console.log('[TouchDebug] Sent', scrollAction.data.length, `arrow ${direction} keys, total:`, this.touchScrollSent);
-            this.lastTouchY = touchY;
+
+            // Reset accumulated delta after sending keys (consumed the scroll)
+            this.accumulatedDelta = 0;
         } else if (scrollAction.action === 'term-scroll') {
             // Normal buffer: use xterm.js's built-in scrolling
-            this.term.scrollLines(scrollAction.data);
-            console.log('[TouchDebug] Scrolled', scrollAction.data, 'lines in normal buffer');
-            this.lastTouchY = touchY;
+            const linesScrolled = scrollAction.data;
+            this.term.scrollLines(linesScrolled);
+            console.log('[TouchDebug] Scrolled', linesScrolled, 'lines in normal buffer');
+
+            // Consume the scrolled amount from accumulated delta
+            // Each line = 20px, so subtract the pixels we "used up"
+            this.accumulatedDelta -= linesScrolled * 20;
         }
+
+        // Always update lastTouchY so we track incremental movement
+        this.lastTouchY = touchY;
     }
 
     handleTouchEnd(e) {
