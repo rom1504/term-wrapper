@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.7] - 2026-01-19
+
+**MAJOR FIX: Continuous touch scrolling now works!**
+
+Research-based fix after user reported complete failure of continuous scrolling.
+
+### Fixed
+- **touch-action: none CSS added** - CRITICAL for mobile touch scrolling
+  - Without this, Chrome ignores preventDefault() calls ([Chrome Developers](https://developer.chrome.com/blog/scrolling-intervention))
+  - CSS property must be set BEFORE events fire ([MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/touch-action))
+  - Applied to #terminal-container and .xterm-viewport
+
+- **All touch event listeners now non-passive**
+  - Changed from {passive: true} to {passive: false} for all touch events
+  - Required for preventDefault() to work properly
+  - touchstart, touchmove, touchend all consistent now
+
+- **preventDefault() called unconditionally**
+  - Now called on every touchmove, not just after threshold
+  - Ensures browser never handles touch scrolling
+  - Combined with touch-action CSS for maximum compatibility
+
+- **pointer-events: none on .xterm-viewport**
+  - Prevents xterm.js's own viewport from interfering
+  - Our custom touch handlers take full control
+  - xterm.js can still scroll programmatically via term.scrollLines()
+
+- **lastTouchY always updated**
+  - Previously only updated inside threshold check
+  - Now updates every frame for accurate diff calculation
+
+### Research References
+- [Chrome: Making touch scrolling fast by default](https://developer.chrome.com/blog/scrolling-intervention)
+- [MDN: touch-action CSS property](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/touch-action)
+- [GitHub: interact.js touch-action usage](https://github.com/taye/interact.js/issues/595)
+- [xterm.js: Limited touch support issue](https://github.com/xtermjs/xterm.js/issues/5377)
+
+### Technical Details
+The key insight: **preventDefault() alone is insufficient on modern browsers**.
+
+From Chrome's intervention policy:
+> "Websites should not rely on calling preventDefault() inside of touchstart
+> and touchmove listeners as this is no longer guaranteed to be honored in Chrome.
+> Developers should apply the touch-action CSS property on elements where scrolling
+> and zooming should be disabled."
+
+Without touch-action: none, the browser assumes touch events are for scrolling
+and ignores preventDefault() calls, making continuous scrolling impossible.
+
 ## [0.6.6] - 2026-01-19
 
 Critical fix for continuous touch scrolling.

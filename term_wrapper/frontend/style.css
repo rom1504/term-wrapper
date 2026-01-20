@@ -149,6 +149,11 @@ button:disabled {
     display: flex;
     justify-content: center;
     align-items: flex-start;
+    /* Critical for continuous touch scrolling - prevents browser default touch handling */
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 #terminal {
@@ -164,6 +169,10 @@ button:disabled {
 
 .xterm-viewport {
     background-color: #000 !important;
+    /* Disable native touch handling on viewport - we handle it via custom touch events */
+    touch-action: none !important;
+    /* Keep overflow for xterm.js's programmatic scrolling, but prevent pointer events */
+    pointer-events: none !important;
 }
 
 /* Mobile controls */

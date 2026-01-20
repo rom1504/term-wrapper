@@ -133,11 +133,12 @@ class TerminalApp {
 
         // Custom touch scrolling for better mobile experience
         // Attach to terminal container to intercept before xterm.js
+        // All events must be non-passive to allow preventDefault() to work
         const terminalContainer = document.getElementById('terminal-container');
         if (terminalContainer) {
-            terminalContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
+            terminalContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
             terminalContainer.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-            terminalContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: true });
+            terminalContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
         }
     }
 
@@ -393,10 +394,13 @@ class TerminalApp {
         const diff = touchY - this.lastTouchY;
         const totalDiff = touchY - this.touchStartY;
 
+        // Always prevent default to ensure browser doesn't handle scrolling
+        // (combined with touch-action: none in CSS for maximum compatibility)
+        e.preventDefault();
+
         // Detect if user is scrolling (not typing)
         if (Math.abs(totalDiff) > 10) {
             this.isScrolling = true;
-            e.preventDefault(); // Prevent default to use custom scrolling
 
             // Variable speed based on swipe velocity for natural feel
             const velocity = Math.abs(diff);
@@ -423,9 +427,10 @@ class TerminalApp {
                 // Keep the fractional remainder
                 this.scrollAccumulator -= scrollAmount * direction;
             }
-
-            this.lastTouchY = touchY;
         }
+
+        // Always update lastTouchY for next frame
+        this.lastTouchY = touchY;
     }
 
     handleTouchEnd(e) {
