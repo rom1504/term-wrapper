@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.8] - 2026-01-20
+
+### Fixed
+- **CI workflow compatibility with Ubuntu 24.04**
+  - Changed libasound2 to libasound2t64 package name
+  - Added --with-deps flag to Playwright installation
+  - All CI tests now passing successfully
+
 ## [0.6.7] - 2026-01-19
 
 **MAJOR FIX: Continuous touch scrolling now works!**
