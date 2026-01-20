@@ -68,7 +68,7 @@ describe('Integration Tests - WebSocket Interaction', () => {
         const scrollAction = determineScrollAction(normalBuffer, 100, 'wheel');
 
         expect(scrollAction.action).toBe('term-scroll');
-        expect(scrollAction.data).toBe(3); // 3 lines down
+        expect(scrollAction.data).toBe(-3); // -3 lines (scroll down toward newer)
 
         // No WebSocket messages should be sent
         expect(sentMessages.length).toBe(0);
@@ -195,7 +195,7 @@ describe('Buffer Type Transition Tests', () => {
         buffer = { type: 'normal' };
         scrollAction = determineScrollAction(buffer, 100, 'wheel');
         expect(scrollAction.action).toBe('term-scroll');
-        expect(scrollAction.data).toBe(3); // Positive for down
+        expect(scrollAction.data).toBe(-3); // Negative for down (toward newer)
     });
 
     test('switching from normal to alternate buffer changes scroll behavior', () => {
@@ -203,7 +203,7 @@ describe('Buffer Type Transition Tests', () => {
         let buffer = { type: 'normal' };
         let scrollAction = determineScrollAction(buffer, -80, 'wheel');
         expect(scrollAction.action).toBe('term-scroll');
-        expect(scrollAction.data).toBe(-2); // Negative for up
+        expect(scrollAction.data).toBe(2); // Positive for up (toward older)
 
         // Switch to alternate buffer
         buffer = { type: 'alternate' };

@@ -99,7 +99,8 @@ export function determineScrollAction(buffer, deltaY, eventType) {
             : calculateTouchScroll(deltaY);
 
         if (scrollCalc.lines > 0) {
-            const scrollLines = scrollCalc.direction === 'up' ? -scrollCalc.lines : scrollCalc.lines;
+            // FIX: Invert the sign - direction 'up' means scroll up in history (positive)
+            const scrollLines = scrollCalc.direction === 'up' ? scrollCalc.lines : -scrollCalc.lines;
             return { action: 'term-scroll', data: scrollLines };
         }
     }

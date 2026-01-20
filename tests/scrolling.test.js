@@ -189,25 +189,25 @@ describe('determineScrollAction', () => {
         test('wheel scroll down uses term-scroll', () => {
             const result = determineScrollAction(normalBuffer, 100, 'wheel');
             expect(result.action).toBe('term-scroll');
-            expect(result.data).toBe(3); // positive = scroll down
+            expect(result.data).toBe(-3); // negative = scroll down (toward newer)
         });
 
         test('wheel scroll up uses term-scroll', () => {
             const result = determineScrollAction(normalBuffer, -100, 'wheel');
             expect(result.action).toBe('term-scroll');
-            expect(result.data).toBe(-3); // negative = scroll up
+            expect(result.data).toBe(3); // positive = scroll up (toward older)
         });
 
         test('touch swipe up uses term-scroll', () => {
             const result = determineScrollAction(normalBuffer, 50, 'touch');
             expect(result.action).toBe('term-scroll');
-            expect(result.data).toBe(-2); // negative = scroll up
+            expect(result.data).toBe(2); // positive = scroll up (reveal earlier content)
         });
 
         test('touch swipe down uses term-scroll', () => {
             const result = determineScrollAction(normalBuffer, -60, 'touch');
             expect(result.action).toBe('term-scroll');
-            expect(result.data).toBe(3); // positive = scroll down
+            expect(result.data).toBe(-3); // negative = scroll down (reveal later content)
         });
 
         test('zero delta returns none action', () => {

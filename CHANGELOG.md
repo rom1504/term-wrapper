@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-01-20
+
+**CRITICAL BUG FIX: Touch scrolling now works correctly on mobile devices**
+
+### Fixed
+- **Touch Scrolling Direction Bug** (scrolling.js:103)
+  - Fixed inverted scroll direction that prevented mobile touch scrolling from working
+  - Touch gestures now correctly scroll the terminal viewport
+  - Verified working on Android 13 emulator via Chrome DevTools Protocol
+  - Swipe down (finger moves down) now correctly reveals earlier content (scroll up in history)
+  - Swipe up (finger moves up) now correctly reveals later content (scroll down)
+
+### Testing
+- All 56 JavaScript tests passing (updated to expect correct behavior)
+- Android emulator verification: viewport scrolls from 82 → 72 on touch swipe
+- Touch events captured and processed correctly via Chrome DevTools Protocol
+
+### Technical Details
+- Root cause: `scrollLines = direction === 'up' ? -scrollCalc.lines : scrollCalc.lines`
+- Fixed to: `scrollLines = direction === 'up' ? scrollCalc.lines : -scrollCalc.lines`
+- Positive values scroll up in history (toward older content)
+- Negative values scroll down (toward newer content)
+
 ## [0.7.2] - 2026-01-20
 
 **TESTING INFRASTRUCTURE: Added comprehensive JavaScript testing with 56 passing tests**
