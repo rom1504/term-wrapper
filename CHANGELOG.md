@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-01-20
+
+**NEW FEATURE: term-wrapper web now supports --host and --port flags**
+
+User requested: "i want to be able to use the web command and pass host to term wrapper"
+
+### Added
+- **--host flag for term-wrapper web command**
+  - Can now specify which host the server binds to
+  - Default remains 127.0.0.1 for security
+  - Example: `term-wrapper web --host 100.67.148.16 claude`
+
+- **--port flag for term-wrapper web command**
+  - Can now specify which port the server binds to
+  - Default is 0 (auto-assign random port)
+  - Example: `term-wrapper web --host 0.0.0.0 --port 8000 claude`
+
+### Changed
+- ServerManager.get_server_url() now accepts optional host and port parameters
+- When custom host/port specified, always starts new server (no auto-discovery)
+- Server URL now displays actual host (not always localhost) when bound to network interface
+
+### Technical Details
+- Modified cli.py to add --host and --port to web subparser
+- Updated ServerManager to pass host/port through to server start
+- _wait_for_server_start() now parses and returns both host and port from uvicorn log
+
 ## [0.6.11] - 2026-01-20
 
 **SECURITY FIX: Server now listens on localhost only by default**

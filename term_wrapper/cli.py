@@ -436,6 +436,8 @@ Examples:
     web_parser.add_argument("cmd_args", nargs=argparse.REMAINDER, help="Additional command arguments")
     web_parser.add_argument("--rows", type=int, default=40, help="Terminal rows (when creating new session)")
     web_parser.add_argument("--cols", type=int, default=120, help="Terminal columns (when creating new session)")
+    web_parser.add_argument("--host", default="127.0.0.1", help="Host to bind server to (default: 127.0.0.1 for security)")
+    web_parser.add_argument("--port", type=int, default=0, help="Port to bind server to (default: 0 = auto-assign)")
 
     # Stop server
     subparsers.add_parser("stop", help="Stop the term-wrapper server")
@@ -455,15 +457,28 @@ Examples:
 
     # Auto-discover or start server if URL not provided
     if args.url is None:
-        server_manager = ServerManager()
-        try:
-            url = server_manager.get_server_url()
-        except Exception as e:
-            print(json.dumps({
-                "error": "Failed to start server",
-                "details": str(e)
-            }), file=sys.stderr)
-            sys.exit(1)
+        # For web command, allow custom host/port
+        if args.command == "web" and hasattr(args, 'host'):
+            server_manager = ServerManager()
+            try:
+                url = server_manager.get_server_url(host=args.host, port=args.port)
+            except Exception as e:
+                print(json.dumps({
+                    "error": "Failed to start server",
+                    "details": str(e)
+                }), file=sys.stderr)
+                sys.exit(1)
+        else:
+            # Use default auto-discovery
+            server_manager = ServerManager()
+            try:
+                url = server_manager.get_server_url()
+            except Exception as e:
+                print(json.dumps({
+                    "error": "Failed to start server",
+                    "details": str(e)
+                }), file=sys.stderr)
+                sys.exit(1)
     else:
         url = args.url
 
