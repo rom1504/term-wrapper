@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.6] - 2026-01-19
+
+Critical fix for continuous touch scrolling.
+
+### Fixed
+- **Continuous scrolling now works while holding and dragging**
+  - Previous issue: Scrolled once then stopped, required lifting finger to scroll more
+  - Root cause: Small finger movements (2-5px/frame) rounded to 0 scroll lines
+  - Solution: Accumulate fractional scroll amounts in `scrollAccumulator`
+  - Example: 3px movement = 0.3 lines → accumulates until >= 1 line, then scrolls
+  - Now supports smooth continuous dragging at any speed
+
+### Technical Details
+- Added `scrollAccumulator` to track sub-line scroll amounts
+- Changed from `Math.round()` to accumulation + `Math.floor()`
+- Preserves fractional remainder for next frame
+- Formula: `scrollAccumulator += (diff / 50 * multiplier)`
+- Scrolls when `Math.floor(Math.abs(scrollAccumulator)) >= 1`
+
 ## [0.6.5] - 2026-01-19
 
 Critical fix for slow touch scrolling on mobile.

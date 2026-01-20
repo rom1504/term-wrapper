@@ -383,6 +383,7 @@ class TerminalApp {
         this.lastTouchY = e.touches[0].clientY;
         this.isScrolling = false;
         this.scrollVelocity = 0;
+        this.scrollAccumulator = 0;  // Accumulate fractional scroll amounts
     }
 
     handleTouchMove(e) {
@@ -408,11 +409,19 @@ class TerminalApp {
                 multiplier = 5;   // Slow swipe = 5 lines per 50px (still faster than old 3)
             }
 
-            const scrollAmount = Math.round(diff / 50 * multiplier);
+            // Accumulate fractional scroll amounts for smooth continuous scrolling
+            // This allows slow continuous dragging to work (otherwise small diffs round to 0)
+            this.scrollAccumulator += (diff / 50 * multiplier);
 
-            if (scrollAmount !== 0) {
-                this.term.scrollLines(scrollAmount); // Positive diff (finger down) = scroll down
-                this.scrollVelocity = scrollAmount;
+            // Only scroll when we've accumulated at least 1 line
+            const scrollAmount = Math.floor(Math.abs(this.scrollAccumulator));
+            if (scrollAmount >= 1) {
+                const direction = this.scrollAccumulator > 0 ? 1 : -1;
+                this.term.scrollLines(scrollAmount * direction);
+                this.scrollVelocity = scrollAmount * direction;
+
+                // Keep the fractional remainder
+                this.scrollAccumulator -= scrollAmount * direction;
             }
 
             this.lastTouchY = touchY;
