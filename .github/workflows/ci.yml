@@ -65,6 +65,19 @@ jobs:
       run: |
         uv run pytest tests/test_frontend_e2e.py -v
 
+    - name: Install Node.js for JavaScript tests
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install JavaScript dependencies
+      run: |
+        npm install
+
+    - name: Run JavaScript tests
+      run: |
+        npm test
+
     - name: Run Playwright web tests
       continue-on-error: true
       run: |

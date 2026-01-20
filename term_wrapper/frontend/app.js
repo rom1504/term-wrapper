@@ -496,13 +496,14 @@ class TerminalApp {
 
         if (scrollAction.action === 'arrow-keys') {
             // Send arrow keys to PTY
+            const direction = scrollAction.data[0] === '\x1b[A' ? 'UP' : 'DOWN';
             for (const key of scrollAction.data) {
                 if (this.ws && this.ws.readyState === WebSocket.OPEN) {
                     this.ws.send(new TextEncoder().encode(key));
                     this.touchScrollSent++;
                 }
             }
-            console.log('[TouchDebug] Sent', scrollAction.data.length, 'arrow keys, total:', this.touchScrollSent);
+            console.log('[TouchDebug] Sent', scrollAction.data.length, `arrow ${direction} keys, total:`, this.touchScrollSent);
             this.lastTouchY = touchY;
         } else if (scrollAction.action === 'term-scroll') {
             // Normal buffer: use xterm.js's built-in scrolling
