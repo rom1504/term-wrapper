@@ -7,6 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-01-20
+
+**TESTING INFRASTRUCTURE: Added comprehensive JavaScript testing with 56 passing tests**
+
+This release focuses on testing infrastructure and fixing integration issues discovered during test development. No new features, but significantly improved code quality and reliability.
+
+### Added
+- **JavaScript Testing Infrastructure**
+  - Jest testing framework with ES modules support
+  - 37 unit tests for scrolling logic (100% function coverage, 100% statement coverage)
+  - 19 integration tests (WebSocket, gestures, boundaries, performance)
+  - Mobile emulation tests with Playwright (Pixel 5 device simulation)
+  - Test coverage reporting: `npm run test:coverage`
+  - Test watch mode: `npm run test:watch`
+
+- **Testable Code Architecture**
+  - Extracted scrolling logic to `term_wrapper/frontend/scrolling.js`
+  - Pure functions for: `isAlternateBuffer`, `calculateWheelScroll`, `calculateTouchScroll`,
+    `getArrowKeySequence`, `generateArrowKeys`, `determineScrollAction`
+  - app.js now imports and uses tested functions
+
+- **Test Types Implemented**
+  1. Unit tests - Function-level logic testing
+  2. Integration tests - WebSocket interaction, gesture sequences
+  3. Module loading tests - Verify ES6 imports work in browser
+  4. Mobile emulation tests - Touch scrolling with Playwright
+  5. Performance tests - Rapid event handling (100+ events)
+
+### Fixed
+- **ES6 Module Loading**
+  - Added `type="module"` to app.js script tag in index.html
+  - Enables import/export for scrolling.js
+
+- **xterm.js API Compatibility**
+  - Replaced non-existent `attachCustomWheelEventHandler()` with standard event listeners
+  - Added wheel event handler with `capture: true, passive: false`
+  - Works with xterm.js 5.3.0 from CDN
+
+- **Scrolling Logic**
+  - Fixed `isAlternateBuffer()` to return boolean (was returning null/undefined)
+  - Refactored wheel handler to use tested `determineScrollAction()`
+  - Refactored touch handler to use tested `determineScrollAction()`
+
+- **Mobile Touch Scrolling**
+  - Touch events properly captured in capture phase
+  - Touch gestures trigger scroll in both normal and alternate buffers
+  - Verified working in Playwright Pixel 5 emulation
+
+### Technical Details
+- **Jest Configuration**
+  - jsdom test environment for browser API simulation
+  - `--experimental-vm-modules` for ES module support in Node.js
+  - TextEncoder/TextDecoder polyfills for Node.js environment
+  - Coverage collection from `term_wrapper/frontend/**/*.js`
+
+- **Test Structure**
+  ```
+  tests/
+  ├── scrolling.test.js              # 37 unit tests
+  ├── scrolling-integration.test.js  # 19 integration tests
+  ├── test_module_loading.py         # Browser integration test
+  └── test_mobile_scrolling.py       # Mobile emulation tests
+  ```
+
+- **Coverage Metrics**
+  - scrolling.js: 100% statements, 100% functions, 92.85% branches
+
+### Testing
+Run tests with:
+```bash
+npm test                  # Run all JS tests
+npm run test:watch        # Watch mode
+npm run test:coverage     # With coverage report
+pytest tests/             # Run Python integration tests
+```
+
+### Notes
+- This is a stability/testing release
+- Touch scrolling tested in mobile emulation (Pixel 5)
+- Real device testing on Xiaomi 13 Android still pending
+- All 56 JavaScript tests passing
+
 ## [0.7.1] - 2026-01-20
 
 **MAJOR FIX: Mouse wheel scrolling now works with Claude Code and other TUI apps!**

@@ -1,0 +1,25 @@
+{
+  "name": "term-wrapper-frontend",
+  "version": "0.7.2",
+  "description": "Frontend JavaScript for term-wrapper",
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "testMatch": ["**/tests/**/*.test.js"],
+    "collectCoverageFrom": [
+      "term_wrapper/frontend/**/*.js",
+      "!term_wrapper/frontend/**/*.test.js"
+    ],
+    "transform": {}
+  }
+}

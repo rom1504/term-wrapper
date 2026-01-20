@@ -1,5 +1,7 @@
 // Terminal Wrapper Frontend Application
 
+import { determineScrollAction } from './scrolling.js';
+
 class TerminalApp {
     constructor() {
         this.term = null;
@@ -153,47 +155,47 @@ class TerminalApp {
         // CRITICAL FIX: Custom wheel handler for alternate buffer (Claude Code, vim, less)
         // When apps use alternate screen + mouse mode, wheel events are sent to the app
         // instead of scrolling. We intercept and allow Shift+Wheel to force scrollback.
-        this.term.attachCustomWheelEventHandler((e) => {
-            const buffer = this.term.buffer.active;
+        // Note: We add the event listener to the terminal element directly since
+        // xterm.js 5.3.0 doesn't have attachCustomWheelEventHandler
+        const terminalElement = document.getElementById('terminal');
+        if (terminalElement) {
+            terminalElement.addEventListener('wheel', (e) => {
+                const buffer = this.term.buffer.active;
 
-            // Debug: Log buffer type (remove after testing)
-            if (!this._loggedBufferType || this._lastBufferType !== buffer.type) {
-                console.log('[ScrollDebug] Buffer type:', buffer.type);
-                this._loggedBufferType = true;
-                this._lastBufferType = buffer.type;
-            }
-
-            // If Shift+Wheel: force terminal scrollback (bypass mouse mode)
-            if (e.shiftKey) {
-                const delta = e.deltaY;
-                const lines = Math.ceil(Math.abs(delta) / 40); // ~3 lines per scroll tick
-                this.term.scrollLines(delta > 0 ? lines : -lines);
-                return false; // Prevent default
-            }
-
-            // If in alternate buffer (Claude Code, vim, less), send arrow keys
-            // This allows scrolling through Claude's output when mouse mode is enabled
-            if (buffer.type === 'alternate') {
-                const delta = e.deltaY;
-
-                // Send arrow key sequences to PTY
-                // \x1b[A = Up Arrow, \x1b[B = Down Arrow
-                const arrowKey = delta < 0 ? '\x1b[A' : '\x1b[B';
-
-                // Send multiple arrow keys for faster scrolling
-                const lines = Math.ceil(Math.abs(delta) / 40); // ~3 lines per scroll tick
-                for (let i = 0; i < lines && i < 5; i++) { // Cap at 5 to avoid overwhelming
-                    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-                        this.ws.send(new TextEncoder().encode(arrowKey));
-                    }
+                // Debug: Log buffer type (remove after testing)
+                if (!this._loggedBufferType || this._lastBufferType !== buffer.type) {
+                    console.log('[ScrollDebug] Buffer type:', buffer.type);
+                    this._loggedBufferType = true;
+                    this._lastBufferType = buffer.type;
                 }
 
-                return false; // Prevent default xterm scrolling
-            }
+                // If Shift+Wheel: force terminal scrollback (bypass mouse mode)
+                if (e.shiftKey) {
+                    e.preventDefault();
+                    const delta = e.deltaY;
+                    const lines = Math.ceil(Math.abs(delta) / 40);
+                    this.term.scrollLines(delta > 0 ? lines : -lines);
+                    return;
+                }
 
-            // Normal buffer: allow default xterm.js scrolling
-            return true;
-        });
+                // Determine scroll action based on buffer type
+                const scrollAction = determineScrollAction(buffer, e.deltaY, 'wheel');
+
+                if (scrollAction.action === 'arrow-keys') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Send arrow keys to PTY
+                    for (const key of scrollAction.data) {
+                        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                            this.ws.send(new TextEncoder().encode(key));
+                        }
+                    }
+                } else if (scrollAction.action === 'term-scroll') {
+                    // Let xterm.js handle normal buffer scrolling
+                    // Don't prevent default
+                }
+            }, { capture: true, passive: false }); // Capture phase to intercept before xterm.js
+        }
 
         // Custom touch scrolling for better mobile experience
         // CRITICAL: Use capture phase to intercept BEFORE xterm.js's Gesture system
@@ -454,50 +456,60 @@ class TerminalApp {
 
     // Touch handling for mobile scrolling
     handleTouchStart(e) {
+        // Only handle single-finger touches
+        if (e.touches.length !== 1) return;
+
         // CRITICAL: Stop propagation to prevent xterm.js's Gesture system from interfering
         e.preventDefault();
         e.stopPropagation();
 
-        console.log('[TouchDebug] touchstart fired');
-
-        // Get viewport element for direct scrolling
-        this.viewportElement = document.querySelector('.xterm-viewport');
+        const buffer = this.term.buffer.active;
+        console.log('[TouchDebug] touchstart - buffer type:', buffer.type);
 
         this.touchStartY = e.touches[0].clientY;
         this.lastTouchY = e.touches[0].clientY;
-        this.isScrolling = false;
-        this.scrollVelocity = 0;
-
-        // Store initial scroll position
-        if (this.viewportElement) {
-            this.initialScrollTop = this.viewportElement.scrollTop;
-            console.log('[TouchDebug] Initial scrollTop:', this.initialScrollTop);
-        }
+        this.touchScrollSent = 0; // Track how many arrow keys sent
     }
 
     handleTouchMove(e) {
-        if (!this.touchStartY || !this.viewportElement) return;
+        if (!this.touchStartY) return;
+        if (e.touches.length !== 1) return;
 
         // CRITICAL: Stop both default behavior AND propagation to block xterm.js's Gesture system
-        // (combined with touch-action: none in CSS and capture: true for maximum compatibility)
         e.preventDefault();
         e.stopPropagation();
 
+        const buffer = this.term.buffer.active;
         const touchY = e.touches[0].clientY;
-        const totalDiff = this.touchStartY - touchY;  // Positive = scroll down, negative = scroll up
+        const deltaY = touchY - this.lastTouchY;
+        const totalDelta = touchY - this.touchStartY;
 
-        console.log('[TouchDebug] touchmove - totalDiff:', totalDiff);
+        // Threshold to prevent jitter (swiping just a few px shouldn't scroll)
+        if (Math.abs(totalDelta) < 20) {
+            return;
+        }
 
-        // Directly set viewport scrollTop for smooth continuous scrolling
-        // No threshold, no accumulator - just direct 1:1 mapping
-        this.viewportElement.scrollTop = this.initialScrollTop + totalDiff;
+        console.log('[TouchDebug] touchmove - buffer:', buffer.type, 'deltaY:', deltaY, 'total:', totalDelta);
 
-        console.log('[TouchDebug] Set scrollTop to:', this.viewportElement.scrollTop);
+        // Determine scroll action based on buffer type
+        const scrollAction = determineScrollAction(buffer, deltaY, 'touch');
 
-        // Track velocity for momentum scrolling
-        const frameDiff = touchY - this.lastTouchY;
-        this.scrollVelocity = -frameDiff;  // Negative because scrolling down moves finger up
-        this.lastTouchY = touchY;
+        if (scrollAction.action === 'arrow-keys') {
+            // Send arrow keys to PTY
+            for (const key of scrollAction.data) {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(new TextEncoder().encode(key));
+                    this.touchScrollSent++;
+                }
+            }
+            console.log('[TouchDebug] Sent', scrollAction.data.length, 'arrow keys, total:', this.touchScrollSent);
+            this.lastTouchY = touchY;
+        } else if (scrollAction.action === 'term-scroll') {
+            // Normal buffer: use xterm.js's built-in scrolling
+            this.term.scrollLines(scrollAction.data);
+            console.log('[TouchDebug] Scrolled', scrollAction.data, 'lines in normal buffer');
+            this.lastTouchY = touchY;
+        }
     }
 
     handleTouchEnd(e) {
@@ -505,28 +517,12 @@ class TerminalApp {
         e.preventDefault();
         e.stopPropagation();
 
-        console.log('[TouchDebug] touchend fired, velocity:', this.scrollVelocity);
+        console.log('[TouchDebug] touchend - total arrow keys sent:', this.touchScrollSent);
 
-        // Apply momentum scrolling if velocity is high enough
-        if (this.viewportElement && Math.abs(this.scrollVelocity) > 2) {
-            let momentum = this.scrollVelocity;
-            const decay = 0.92;
-
-            const momentumScroll = () => {
-                if (Math.abs(momentum) > 0.5) {
-                    this.viewportElement.scrollTop += momentum;
-                    momentum *= decay;
-                    requestAnimationFrame(momentumScroll);
-                }
-            };
-
-            requestAnimationFrame(momentumScroll);
-        }
-
+        // Reset state
         this.touchStartY = 0;
         this.lastTouchY = 0;
-        this.isScrolling = false;
-        this.scrollVelocity = 0;
+        this.touchScrollSent = 0;
     }
 
     setStatus(message, type) {

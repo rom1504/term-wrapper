@@ -16,6 +16,7 @@ package-lock.json
 # Testing
 .pytest_cache/
 .coverage
+coverage/
 
 # IDE
 .vscode/

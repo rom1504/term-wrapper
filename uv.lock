@@ -360,7 +360,7 @@ wheels = [
 
 [[package]]
 name = "term-wrapper"
-version = "0.6.1"
+version = "0.7.2"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
