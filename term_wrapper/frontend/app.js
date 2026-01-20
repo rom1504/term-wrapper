@@ -111,16 +111,35 @@ class TerminalApp {
         // Claude Code writes multiple status lines as new lines (not updating in-place)
         // so we need to keep viewport at bottom to show only the latest one
         this.lastWriteTime = Date.now();
+        this.userScrolledUp = false; // Track if user manually scrolled up
+
         this.term.onWriteParsed(() => {
             this.lastWriteTime = Date.now();
 
-            // If we're near the bottom (within 3 lines), auto-scroll to bottom
-            // This prevents old thinking indicators from staying visible
+            // Only auto-scroll if user hasn't manually scrolled up
+            if (!this.userScrolledUp) {
+                // If we're near the bottom (within 3 lines), auto-scroll to bottom
+                // This prevents old thinking indicators from staying visible
+                const buffer = this.term.buffer.active;
+                const distanceFromBottom = buffer.length - (buffer.viewportY + this.term.rows);
+
+                if (distanceFromBottom < 3) {
+                    this.term.scrollToBottom();
+                }
+            }
+        });
+
+        // Track when user manually scrolls (disable auto-scroll)
+        this.term.onScroll(() => {
             const buffer = this.term.buffer.active;
             const distanceFromBottom = buffer.length - (buffer.viewportY + this.term.rows);
 
+            // User is at bottom - re-enable auto-scroll
             if (distanceFromBottom < 3) {
-                this.term.scrollToBottom();
+                this.userScrolledUp = false;
+            } else {
+                // User scrolled up - disable auto-scroll
+                this.userScrolledUp = true;
             }
         });
 
@@ -129,6 +148,51 @@ class TerminalApp {
             if (this.sessionId) {
                 this.resizeSession(rows, cols);
             }
+        });
+
+        // CRITICAL FIX: Custom wheel handler for alternate buffer (Claude Code, vim, less)
+        // When apps use alternate screen + mouse mode, wheel events are sent to the app
+        // instead of scrolling. We intercept and allow Shift+Wheel to force scrollback.
+        this.term.attachCustomWheelEventHandler((e) => {
+            const buffer = this.term.buffer.active;
+
+            // Debug: Log buffer type (remove after testing)
+            if (!this._loggedBufferType || this._lastBufferType !== buffer.type) {
+                console.log('[ScrollDebug] Buffer type:', buffer.type);
+                this._loggedBufferType = true;
+                this._lastBufferType = buffer.type;
+            }
+
+            // If Shift+Wheel: force terminal scrollback (bypass mouse mode)
+            if (e.shiftKey) {
+                const delta = e.deltaY;
+                const lines = Math.ceil(Math.abs(delta) / 40); // ~3 lines per scroll tick
+                this.term.scrollLines(delta > 0 ? lines : -lines);
+                return false; // Prevent default
+            }
+
+            // If in alternate buffer (Claude Code, vim, less), send arrow keys
+            // This allows scrolling through Claude's output when mouse mode is enabled
+            if (buffer.type === 'alternate') {
+                const delta = e.deltaY;
+
+                // Send arrow key sequences to PTY
+                // \x1b[A = Up Arrow, \x1b[B = Down Arrow
+                const arrowKey = delta < 0 ? '\x1b[A' : '\x1b[B';
+
+                // Send multiple arrow keys for faster scrolling
+                const lines = Math.ceil(Math.abs(delta) / 40); // ~3 lines per scroll tick
+                for (let i = 0; i < lines && i < 5; i++) { // Cap at 5 to avoid overwhelming
+                    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                        this.ws.send(new TextEncoder().encode(arrowKey));
+                    }
+                }
+
+                return false; // Prevent default xterm scrolling
+            }
+
+            // Normal buffer: allow default xterm.js scrolling
+            return true;
         });
 
         // Custom touch scrolling for better mobile experience

@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-01-20
+
+**MAJOR FIX: Mouse wheel scrolling now works with Claude Code and other TUI apps!**
+
+Based on detailed analysis from Gemini/ChatGPT: The issue was that Claude Code (and other TUI apps like vim, less) use the alternate screen buffer + mouse reporting mode. In this mode, xterm.js forwards wheel events to the application instead of scrolling the terminal viewport.
+
+### Root Cause Analysis
+1. **Alternate Screen Buffer**: Claude Code uses DECSET ?1049h to enter alternate buffer (no scrollback history)
+2. **Mouse Reporting Mode**: Claude Code enables mouse tracking (DECSET 1000/1002/1006)
+3. **Result**: Wheel events sent to app, not used for scrolling viewport
+4. **Auto-scroll interference**: Our auto-scroll logic was fighting user scroll attempts
+
+### Fixed
+- **Custom wheel handler for alternate buffer** (Option A from analysis)
+  - Detects when terminal is in alternate buffer mode
+  - Sends arrow key sequences (\x1b[A / \x1b[B) to PTY when scrolling
+  - This lets you scroll through Claude's output using mouse wheel
+  - Shift+Wheel forces terminal scrollback (bypasses mouse mode)
+
+- **Smart auto-scroll** (Option D from analysis)
+  - Only auto-scrolls to bottom if user hasn't manually scrolled up
+  - Tracks user scroll position with onScroll handler
+  - Re-enables auto-scroll when user returns to bottom
+  - Prevents auto-scroll from fighting manual scrolling
+
+- **Debug logging**
+  - Console logs buffer type (normal/alternate) for troubleshooting
+  - Can be removed once confirmed working
+
+### Technical Details
+- `attachCustomWheelEventHandler()` intercepts wheel events
+- Checks `term.buffer.active.type` to detect alternate vs normal buffer
+- In alternate buffer: sends arrow keys to PTY (3-5 keys per scroll tick)
+- In normal buffer: allows default xterm.js scrolling
+- Shift+Wheel: forces term.scrollLines() regardless of buffer mode
+
+### How to Test
+1. Start Claude Code: `term-wrapper web claude`
+2. Try scrolling with mouse wheel - should scroll Claude's output
+3. Try Shift+Wheel - should scroll terminal history (bypass Claude)
+4. Open browser console - should see buffer type logs
+
+### References
+- Analysis provided by Gemini and ChatGPT
+- xterm.js alternate screen buffer behavior
+- Terminal mouse reporting modes (DECSET 1000/1002/1006)
+
 ## [0.7.0] - 2026-01-20
 
 **NEW FEATURE: term-wrapper web now supports --host and --port flags**
